@@ -12,10 +12,13 @@
 ## 1. Problem Definition
 
 ### 1.1 Problem Statement
+
 In a large university, students want to learn new skills from their own peers and faculty but have no centralized way to discover who is skilled in what, book 1:1 learning sessions, or get proper feedback. SkillSwap solves this by creating a peer-to-peer skill-sharing platform where students and faculty can showcase their expertise, request or offer learning sessions, book time slots, and rate each other — making campus learning more accessible, interactive, and community-driven.
 
 ### 1.2 Solution Overview
+
 SkillSwap is a web-based platform that enables:
+
 - Users to create profiles showcasing their skills and proficiency levels
 - Students to browse and search for mentors based on skills
 - Booking of 1:1 learning sessions with conflict prevention
@@ -23,6 +26,7 @@ SkillSwap is a web-based platform that enables:
 - Real-time notifications for session updates
 
 ### 1.3 Objectives
+
 1. Build a responsive, user-friendly web application
 2. Implement secure authentication with role-based access
 3. Design a flexible database schema for skills and sessions
@@ -79,17 +83,17 @@ SkillSwap is a web-based platform that enables:
 
 ### 2.2 Relationships
 
-| Relationship | Type | Description |
-|-------------|------|-------------|
-| User → SkillCategory | 1:N | A user can have many skills |
-| SkillCategory → Skill | 1:N | A category can have many skills |
-| User → UserSkill | 1:N | A user can add many skills to their profile |
-| Skill → UserSkill | 1:N | A skill can be added by many users |
-| User → SkillSession (as Mentor) | 1:N | A mentor can have many sessions |
-| User → SkillSession (as Mentee) | 1:N | A mentee can have many sessions |
-| SkillSession → SessionReview | 1:1 | A session has at most one review |
-| User → SessionReview | 1:N | A reviewer can write many reviews |
-| User → Notification | 1:N | A user can have many notifications |
+| Relationship                     | Type | Description                                 |
+| -------------------------------- | ---- | ------------------------------------------- |
+| User → SkillCategory            | 1:N  | A user can have many skills                 |
+| SkillCategory → Skill           | 1:N  | A category can have many skills             |
+| User → UserSkill                | 1:N  | A user can add many skills to their profile |
+| Skill → UserSkill               | 1:N  | A skill can be added by many users          |
+| User → SkillSession (as Mentor) | 1:N  | A mentor can have many sessions             |
+| User → SkillSession (as Mentee) | 1:N  | A mentee can have many sessions             |
+| SkillSession → SessionReview    | 1:1  | A session has at most one review            |
+| User → SessionReview            | 1:N  | A reviewer can write many reviews           |
+| User → Notification             | 1:N  | A user can have many notifications          |
 
 ### 2.3 Collection Schemas
 
@@ -251,59 +255,64 @@ async function createReview(sessionId, reviewerId, rating) {
 
 ## 4. Technology Stack
 
-| Layer | Technology | Purpose |
-|-------|------------|---------|
-| **Frontend** | React 18 + Vite | UI Framework |
-| **Styling** | Tailwind CSS | Responsive Design |
-| **Animation** | Framer Motion | Smooth Transitions |
-| **Backend** | Node.js + Express | REST API Server |
-| **Language** | TypeScript | Type Safety |
-| **Database** | MongoDB 8.0 | Document Database |
-| **ORM** | Prisma 5 | Database Abstraction |
-| **Auth** | JWT + bcrypt | Secure Authentication |
-| **Validation** | Zod | Schema Validation |
+| Layer                | Technology        | Purpose               |
+| -------------------- | ----------------- | --------------------- |
+| **Frontend**   | React 18 + Vite   | UI Framework          |
+| **Styling**    | Tailwind CSS      | Responsive Design     |
+| **Animation**  | Framer Motion     | Smooth Transitions    |
+| **Backend**    | Node.js + Express | REST API Server       |
+| **Language**   | TypeScript        | Type Safety           |
+| **Database**   | MongoDB 8.0       | Document Database     |
+| **ORM**        | Prisma 5          | Database Abstraction  |
+| **Auth**       | JWT + bcrypt      | Secure Authentication |
+| **Validation** | Zod               | Schema Validation     |
 
 ---
 
 ## 5. API Endpoints
 
 ### Authentication
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| POST | /api/auth/register | Register new user | No |
-| POST | /api/auth/login | Login user | No |
-| GET | /api/auth/profile | Get current user | Yes |
+
+| Method | Endpoint           | Description       | Auth |
+| ------ | ------------------ | ----------------- | ---- |
+| POST   | /api/auth/register | Register new user | No   |
+| POST   | /api/auth/login    | Login user        | No   |
+| GET    | /api/auth/profile  | Get current user  | Yes  |
 
 ### Skills
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | /api/skills | Get all skills | No |
-| GET | /api/skills/categories | Get categories | No |
-| GET | /api/skills/users/:id | Get user skills | No |
-| POST | /api/skills | Add skill to profile | Yes |
-| DELETE | /api/skills/:id | Remove skill | Yes |
+
+| Method | Endpoint               | Description          | Auth |
+| ------ | ---------------------- | -------------------- | ---- |
+| GET    | /api/skills            | Get all skills       | No   |
+| GET    | /api/skills/categories | Get categories       | No   |
+| GET    | /api/skills/users/:id  | Get user skills      | No   |
+| POST   | /api/skills            | Add skill to profile | Yes  |
+| DELETE | /api/skills/:id        | Remove skill         | Yes  |
 
 ### Sessions
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | /api/sessions | Get user sessions | Yes |
-| POST | /api/sessions | Book new session | Yes |
-| PATCH | /api/sessions/:id/status | Update status | Yes |
-| GET | /api/sessions/stats | Get dashboard stats | Yes |
+
+| Method | Endpoint                 | Description         | Auth |
+| ------ | ------------------------ | ------------------- | ---- |
+| GET    | /api/sessions            | Get user sessions   | Yes  |
+| POST   | /api/sessions            | Book new session    | Yes  |
+| PATCH  | /api/sessions/:id/status | Update status       | Yes  |
+| GET    | /api/sessions/stats      | Get dashboard stats | Yes  |
 
 ### Reviews
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| POST | /api/reviews | Submit review | Yes |
-| GET | /api/reviews/mentor/:id | Get mentor reviews | No |
-| GET | /api/reviews/leaderboard | Get top mentors | No |
+
+| Method | Endpoint                 | Description        | Auth |
+| ------ | ------------------------ | ------------------ | ---- |
+| POST   | /api/reviews             | Submit review      | Yes  |
+| GET    | /api/reviews/mentor/:id  | Get mentor reviews | No   |
+| GET    | /api/reviews/leaderboard | Get top mentors    | No   |
 
 ### Notifications
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | /api/notifications | Get notifications | Yes |
-| PATCH | /api/notifications/:id/read | Mark as read | Yes |
-| PATCH | /api/notifications/read-all | Mark all as read | Yes |
+
+| Method | Endpoint                    | Description       | Auth |
+| ------ | --------------------------- | ----------------- | ---- |
+| GET    | /api/notifications          | Get notifications | Yes  |
+| PATCH  | /api/notifications/:id/read | Mark as read      | Yes  |
+| PATCH  | /api/notifications/read-all | Mark all as read  | Yes  |
 
 ---
 
@@ -347,6 +356,7 @@ SkillSwap/
 ## 7. Implementation Details
 
 ### 7.1 Authentication Flow
+
 1. User submits email/password
 2. Server validates credentials with bcrypt
 3. Server generates JWT token with userId, email, role
@@ -355,10 +365,12 @@ SkillSwap/
 6. Middleware validates token and attaches user to request
 
 ### 7.2 Role-Based Access Control
+
 - **Students**: Browse skills, book sessions, submit reviews
 - **Faculty**: Manage skills, accept/reject sessions, receive reviews
 
 ### 7.3 Session Booking Flow
+
 1. Student searches mentors by skill
 2. Student clicks "Book Session" on mentor card
 3. Modal opens with date/time picker
@@ -372,6 +384,7 @@ SkillSwap/
 11. Mentor avg_rating auto-updates
 
 ### 7.4 Frontend Features
+
 - Dark mode interface (Supabase-inspired)
 - Responsive design (mobile-friendly)
 - Real-time notifications badge
@@ -384,7 +397,9 @@ SkillSwap/
 ## 8. Sample Data
 
 ### 8.1 Users (20 records)
+
 **Faculty (5):**
+
 - Dr. Priya Sharma (FAC001) - Computer Science - Rating: 5.0
 - Prof. Rajesh Kumar (FAC002) - Data Science - Rating: 4.8
 - Dr. Anita Desai (FAC003) - Machine Learning - Rating: 4.9
@@ -392,9 +407,11 @@ SkillSwap/
 - Dr. Meera Patel (FAC005) - Mobile Development - Rating: 4.6
 
 **Students (15):**
+
 - MCA2024001 - MCA2024015
 
 ### 8.2 Skill Categories (9)
+
 - Programming Languages
 - Web Development
 - Data Science & Analytics
@@ -406,9 +423,11 @@ SkillSwap/
 - Others
 
 ### 8.3 Skills (35+)
+
 Including: Python, JavaScript, React, Node.js, MongoDB, SQL, TensorFlow, AWS, Figma, Communication, etc.
 
 ### 8.4 Sessions
+
 - 8 completed sessions with reviews
 - 3 confirmed upcoming sessions
 - 3 pending approval
@@ -417,62 +436,68 @@ Including: Python, JavaScript, React, Node.js, MongoDB, SQL, TensorFlow, AWS, Fi
 
 ## 9. Testing Credentials
 
-| Role | Email | Password |
-|------|-------|----------|
+| Role    | Email                       | Password    |
+| ------- | --------------------------- | ----------- |
 | Faculty | priya.sharma@university.edu | password123 |
-| Student | aarav.gupta@student.edu | password123 |
+| Student | aarav.gupta@student.edu     | password123 |
 
 ---
 
 ## 10. Evaluation Criteria Mapping
 
-| Criterion | Implementation |
-|-----------|---------------|
-| Full-Stack Application | React + Node.js + Express + MongoDB |
-| Database Schema | 7 MongoDB collections with relationships |
-| Aggregation Pipeline | Leaderboard (VIEW equivalent) |
-| Transaction | Session booking with conflict check |
-| Trigger | Auto-update avg_rating on review |
-| Authentication | JWT + bcrypt (secure) |
-| Role-based Access | Student/Faculty with middleware |
-| Responsive UI | Tailwind CSS mobile-first |
-| Animations | Framer Motion transitions |
-| TypeScript | Full type safety frontend & backend |
+| Criterion              | Implementation                           |
+| ---------------------- | ---------------------------------------- |
+| Full-Stack Application | React + Node.js + Express + MongoDB      |
+| Database Schema        | 7 MongoDB collections with relationships |
+| Aggregation Pipeline   | Leaderboard (VIEW equivalent)            |
+| Transaction            | Session booking with conflict check      |
+| Trigger                | Auto-update avg_rating on review         |
+| Authentication         | JWT + bcrypt (secure)                    |
+| Role-based Access      | Student/Faculty with middleware          |
+| Responsive UI          | Tailwind CSS mobile-first                |
+| Animations             | Framer Motion transitions                |
+| TypeScript             | Full type safety frontend & backend      |
 
 ---
 
 ## 11. Screenshots Description
 
 ### 11.1 Login Page
+
 - Centered card with logo
 - Email and password fields
 - Supabase-inspired dark theme
 - "Register here" link
 
 ### 11.2 Dashboard
+
 - Welcome header with user name
 - 4 stat cards (Skills, Sessions, Rating, Notifications)
 - Recent notifications list
 - Quick action buttons
 
 ### 11.3 Browse Mentors
+
 - Search bar with skill filter
 - Mentor cards with avatar, name, skills, rating
 - "View Profile" and "Book Session" buttons
 - Booking modal with date picker
 
 ### 11.4 Sessions Page
+
 - Tab navigation (Upcoming/Past/Pending)
 - Session cards with status badges (Pending/Confirmed/Completed)
 - Accept/Reject buttons for mentors
 - Review submission for completed sessions
 
 ### 11.5 Leaderboard
+
 - Ranked list with gold/silver/bronze medals
 - Mentor name, department, rating, session count
 - "Book Now" quick action
 
 ### 11.6 My Skills
+
 - List of user's skills with proficiency
 - Add/Edit/Delete functionality
 - Category-based grouping
@@ -482,6 +507,7 @@ Including: Python, JavaScript, React, Node.js, MongoDB, SQL, TensorFlow, AWS, Fi
 ## 12. Conclusion
 
 SkillSwap successfully demonstrates:
+
 - Full-stack MERN development with TypeScript
 - MongoDB document-based database design
 - Advanced DBMS features (Aggregation, Transactions, Triggers)
@@ -494,6 +520,6 @@ The application is production-ready and can be deployed with proper environment 
 
 ---
 
-**Submitted by:** [Your Name]
-**Roll Number:** [Your Roll Number]
+**Submitted by:** **Vishal Singh** ,[**Chirag Varshney**](https://github.com/cvxlogic) and **Aryan Joshi**
+**Roll Number: 590028039, 590024860 and 590028005**
 **Date:** April 17, 2026

@@ -21,21 +21,21 @@ A peer-to-peer skill-sharing platform for universities where students and facult
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|------------|
-| Frontend | React 18 + Vite + TypeScript |
-| Styling | Tailwind CSS |
-| Animation | Framer Motion |
-| Backend | Node.js + Express.js |
-| Database | MongoDB 8.0 + Prisma ORM |
-| Auth | JWT + bcrypt |
-| Validation | Zod |
+| Layer      | Technology                   |
+| ---------- | ---------------------------- |
+| Frontend   | React 18 + Vite + TypeScript |
+| Styling    | Tailwind CSS                 |
+| Animation  | Framer Motion                |
+| Backend    | Node.js + Express.js         |
+| Database   | MongoDB 8.0 + Prisma ORM     |
+| Auth       | JWT + bcrypt                 |
+| Validation | Zod                          |
 
 ---
 
 ## Prerequisites
 
-- **Node.js** v18+ 
+- **Node.js** v18+
 - **MongoDB** v6.0+ (with replica set)
 - **npm** or **yarn**
 
@@ -53,6 +53,7 @@ mongod --replSet rs0 --dbpath /path/to/data --port 27017
 ```
 
 Initialize replica set (run once):
+
 ```bash
 mongosh --eval 'rs.initiate()'
 ```
@@ -107,6 +108,7 @@ Frontend runs on **http://localhost:3000** (or next available port)
 ## Environment Variables
 
 ### Backend (.env)
+
 ```env
 DATABASE_URL="mongodb://localhost:27017/skillswap_db?replicaSet=rs0"
 JWT_SECRET="your-secret-key-min-32-characters"
@@ -114,6 +116,7 @@ PORT=5001
 ```
 
 ### Frontend (.env)
+
 ```env
 VITE_API_URL=http://localhost:5001/api
 ```
@@ -122,16 +125,17 @@ VITE_API_URL=http://localhost:5001/api
 
 ## Test Accounts
 
-| Role | Email | Password |
-|------|-------|----------|
+| Role    | Email                       | Password    |
+| ------- | --------------------------- | ----------- |
 | Faculty | priya.sharma@university.edu | password123 |
-| Student | aarav.gupta@student.edu | password123 |
+| Student | aarav.gupta@student.edu     | password123 |
 
 ---
 
 ## Database Schema
 
 7 MongoDB Collections:
+
 - **User** - User accounts with roles
 - **SkillCategory** - Skill categories
 - **Skill** - Skills linked to categories
@@ -144,40 +148,46 @@ VITE_API_URL=http://localhost:5001/api
 
 ## API Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | /api/auth/register | Register user |
-| POST | /api/auth/login | Login |
-| GET | /api/auth/profile | Get current user |
-| GET | /api/skills | Get all skills |
-| GET | /api/skills/categories | Get categories |
-| POST | /api/skills | Add skill to profile |
-| GET | /api/sessions | Get user sessions |
-| POST | /api/sessions | Book session |
-| PATCH | /api/sessions/:id/status | Update session status |
-| POST | /api/reviews | Submit review |
-| GET | /api/reviews/leaderboard | Get top mentors |
-| GET | /api/notifications | Get notifications |
+| Method | Endpoint                 | Description           |
+| ------ | ------------------------ | --------------------- |
+| POST   | /api/auth/register       | Register user         |
+| POST   | /api/auth/login          | Login                 |
+| GET    | /api/auth/profile        | Get current user      |
+| GET    | /api/skills              | Get all skills        |
+| GET    | /api/skills/categories   | Get categories        |
+| POST   | /api/skills              | Add skill to profile  |
+| GET    | /api/sessions            | Get user sessions     |
+| POST   | /api/sessions            | Book session          |
+| PATCH  | /api/sessions/:id/status | Update session status |
+| POST   | /api/reviews             | Submit review         |
+| GET    | /api/reviews/leaderboard | Get top mentors       |
+| GET    | /api/notifications       | Get notifications     |
 
 ---
 
 ## MongoDB Advanced Features
 
 ### Aggregation Pipeline (VIEW)
+
 Leaderboard uses MongoDB aggregation to calculate mentor rankings:
+
 - $match → Filter faculty
 - $lookup → Join sessions & reviews
 - $group → Calculate average ratings
 - $sort → Rank by rating
 
 ### Transaction (STORED PROCEDURE)
+
 Session booking uses multi-document operations:
+
 - Validates mentor exists
 - Checks for scheduling conflicts
 - Creates session + notification atomically
 
 ### Trigger (Auto-Update)
+
 After review submission:
+
 - Calculates new average rating
 - Updates mentor's avg_rating field
 - Creates notification for mentor
@@ -221,6 +231,7 @@ SkillSwap/
 ## Scripts
 
 ### Backend
+
 ```bash
 npm run dev     # Start with ts-node
 npm run build   # Compile TypeScript
@@ -228,6 +239,7 @@ npm start       # Start production server
 ```
 
 ### Frontend
+
 ```bash
 npm run dev     # Start Vite dev server
 npm run build   # Build for production
@@ -243,4 +255,4 @@ MCA Sem-II Project - Educational Purpose
 
 ## Author
 
-[Your Name] | MCA Sem-II | Full-Stack Application with Database Integration
+**Vishal Singh** , [**Chirag Varshney**](https://github.com/cvxlogic) and **Aryan Joshi** | MCA Sem-II | Full-Stack Application with Database Integration
