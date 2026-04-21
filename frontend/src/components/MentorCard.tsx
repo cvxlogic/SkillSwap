@@ -1,99 +1,45 @@
-import { motion } from 'framer-motion';
-import { Star, MapPin, BookOpen } from 'lucide-react';
-import { User, UserSkill } from '../types';
-import toast from 'react-hot-toast';
+import type { User } from '../types';
 
 interface MentorCardProps {
-  mentor: User & { user_skills?: UserSkill[] };
-  onSelect?: () => void;
-  showSkills?: boolean;
-  showFavorite?: boolean;
+  mentor: User & { userSkills?: any[] };
 }
 
-export default function MentorCard({ mentor, onSelect, showSkills = true, showFavorite = false }: MentorCardProps) {
-  const skills = mentor.user_skills?.slice(0, 3) || [];
-
-  const handleFavorite = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    const stored = localStorage.getItem('favorites');
-    const favs: string[] = stored ? JSON.parse(stored) : [];
-    
-    if (favs.includes(mentor.user_id)) {
-      const newFavs = favs.filter(id => id !== mentor.user_id);
-      localStorage.setItem('favorites', JSON.stringify(newFavs));
-      toast.success('Removed from favorites');
-    } else {
-      localStorage.setItem('favorites', JSON.stringify([...favs, mentor.user_id]));
-      toast.success('Added to favorites');
-    }
-  };
+export default function MentorCard({ mentor }: MentorCardProps) {
+  const userSkills = mentor.userSkills || [];
 
   return (
-    <motion.div
-      whileHover={{ scale: 1.02, borderColor: 'rgba(62, 207, 142, 0.5)' }}
-      className="elevated-card cursor-pointer p-5 relative group"
-      onClick={onSelect}
-    >
-      {showFavorite && (
-        <button
-          onClick={handleFavorite}
-          className="absolute top-4 right-4 p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300"
-          style={{ 
-            background: 'rgba(255, 255, 255, 0.05)', 
-            color: '#b4b4b4' 
-          }}
-        >
-          <Star size={16} fill="currentColor" />
-        </button>
-      )}
-      
+    <div className="glass-card p-5 rounded-xl">
       <div className="flex items-start gap-4">
-        <div className="w-14 h-14 rounded-xl flex items-center justify-center text-xl font-medium" style={{ 
-          background: 'linear-gradient(135deg, #3ecf8e 0%, #2eb878 100%)', 
-          color: '#0a0a0f',
-          boxShadow: '0 4px 20px rgba(62, 207, 142, 0.3)'
-        }}>
-          {mentor.full_name.split(' ').map(n => n[0]).join('')}
+        <div className="w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold shrink-0" 
+          style={{ background: 'linear-gradient(135deg, #3ecf8e 0%, #2eb878 100%)', color: '#0a0a0f' }}>
+          {mentor.name?.charAt(0) || '?'}
         </div>
-        
         <div className="flex-1 min-w-0">
-          <h3 className="font-normal text-lg" style={{ letterSpacing: '-0.02em' }}>{mentor.full_name}</h3>
-          
-          <div className="flex items-center gap-4 mt-1 text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>
-            {mentor.department && (
-              <span className="flex items-center gap-1">
-                <MapPin size={14} />
-                {mentor.department}
-              </span>
-            )}
-            {mentor.avg_rating ? (
-              <span className="flex items-center gap-1 gradient-text">
-                <Star size={14} fill="#3ecf8e" />
-                {Number(mentor.avg_rating).toFixed(1)}
-              </span>
-            ) : null}
-          </div>
-
-          {showSkills && skills.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-3">
-              {skills.map((us) => (
-                <span
-                  key={us.id}
-                  className="px-3 py-1 rounded-full text-xs flex items-center gap-1"
-                  style={{ 
-                    background: 'rgba(62, 207, 142, 0.1)', 
-                    border: '1px solid rgba(62, 207, 142, 0.2)',
-                    color: '#3ecf8e'
-                  }}
-                >
-                  <BookOpen size={10} />
-                  {us.skill.name}
-                </span>
-              ))}
-            </div>
+          <h3 className="font-medium truncate">{mentor.name}</h3>
+          <p className="text-sm text-white/50 truncate">{mentor.role}</p>
+          {mentor.bio && (
+            <p className="text-sm text-white/70 mt-1 line-clamp-2">{mentor.bio}</p>
           )}
         </div>
       </div>
-    </motion.div>
+
+      {userSkills.length > 0 && (
+        <div className="mt-4 pt-4 border-t border-white/10">
+          <p className="text-xs text-white/50 mb-2">Skills</p>
+          <div className="flex flex-wrap gap-2">
+            {userSkills.slice(0, 4).map((us: any) => (
+              <span key={us.id} className="px-2 py-1 rounded-full text-xs" 
+                style={{ background: 'rgba(62, 207, 142, 0.15)', color: '#3ecf8e' }}>
+                {us.skill?.name || us.skill?.name || 'Skill'}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <button className="glow-button w-full mt-4">
+        Connect
+      </button>
+    </div>
   );
 }

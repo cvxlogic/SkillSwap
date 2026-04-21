@@ -1,52 +1,107 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
-import { config } from '../config';
-import { JwtPayload } from '../types';
+import { verifyAccessToken } from '../utils/jwt';
+import prisma from '../utils/prisma';
 
 export interface AuthRequest extends Request {
-  user?: JwtPayload;
+  user?: {
+    id: string;
+    email: string;
+    role: string;
+    isAdmin: boolean;
+  };
 }
 
-export const authenticate = (req: AuthRequest, res: Response, next: NextFunction) => {
+/**
+ * Middleware to authenticate JWT token
+ * Attaches user info to req.user
+ */
+export async function authenticate(req: AuthRequest, res: Response, next: NextFunction) {
   try {
     const authHeader = req.headers.authorization;
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ 
-        success: false, 
-        error: 'No token provided' 
+      return res.status(401).json({
+        success: false,
+        message: 'Access token required',
       });
     }
 
     const token = authHeader.split(' ')[1];
-    const decoded = jwt.verify(token, config.jwtSecret) as JwtPayload;
-    
-    req.user = decoded;
+    const payload = verifyAccessToken(token);
+
+    // Check if user exists and is not suspended
+    const user = await prisma.user.findUnique({
+      where: { id: payload.userId },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        isAdmin: true,
+        isSuspended: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    if (user.isSuspended) {
+      return res.status(403).json({
+        success: false,
+        message: 'Account is suspended',
+      });
+    }
+
+    req.user = {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      isAdmin: user.isAdmin,
+    };
+
     next();
   } catch (error) {
-    return res.status(401).json({ 
-      success: false, 
-      error: 'Invalid or expired token' 
+    if (error instanceof Error && error.name === 'TokenExpiredError') {
+      return res.status(401).json({
+        success: false,
+        message: 'Token expired',
+      });
+    }
+    
+    return res.status(401).json({
+      success: false,
+      message: 'Invalid token',
     });
   }
-};
+}
 
-export const authorize = (...roles: string[]) => {
+/**
+ * Middleware to check if user is admin
+ */
+export function authorizeAdmin(req: AuthRequest, res: Response, next: NextFunction) {
+  if (!req.user || !req.user.isAdmin) {
+    return res.status(403).json({
+      success: false,
+      message: 'Admin access required',
+    });
+  }
+  next();
+}
+
+/**
+ * Middleware to check if user has specific role
+ */
+export function requireRole(...roles: string[]) {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
-    if (!req.user) {
-      return res.status(401).json({ 
-        success: false, 
-        error: 'Authentication required' 
+    if (!req.user || !roles.includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        message: 'Insufficient permissions',
       });
     }
-
-    if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ 
-        success: false, 
-        error: 'Insufficient permissions' 
-      });
-    }
-
     next();
   };
-};
+}

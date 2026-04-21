@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Home, BookOpen, Users, Calendar, Trophy, Bell, LogOut, Menu, X, 
-  Send, Star, User, ChevronLeft
+  Send, Star, User
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -139,10 +139,10 @@ export default function Layout({ children }: LayoutProps) {
           <div className="glass-card p-3 mb-3">
             <div className="flex items-center gap-3">
               <div className="w-11 h-11 rounded-xl flex items-center justify-center text-sm font-medium flex-shrink-0" style={{ background: 'linear-gradient(135deg, #7840ff 0%, #5a2db8 100%)', color: 'white', boxShadow: '0 4px 20px rgba(120, 64, 255, 0.3)' }}>
-                {user?.full_name.split(' ').map(n => n[0]).join('')}
+                {user?.name.split(' ').map(n => n.charAt(0)).join('')}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{user?.full_name}</p>
+                <p className="text-sm font-medium truncate">{user?.name}</p>
                 <p className="text-xs capitalize" style={{ color: '#898989' }}>{user?.role}</p>
               </div>
             </div>
@@ -182,9 +182,9 @@ export default function Layout({ children }: LayoutProps) {
               style={{ background: 'rgba(255,255,255,0.05)' }}
             >
               <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-medium" style={{ background: 'linear-gradient(135deg, #7840ff 0%, #5a2db8 100%)', color: 'white' }}>
-                {user?.full_name.split(' ').map(n => n[0]).join('')}
+                {user?.name.split(' ').map(n => n.charAt(0)).join('')}
               </div>
-              <span className="text-sm font-medium hidden sm:block">{user?.full_name?.split(' ')[0]}</span>
+              <span className="text-sm font-medium hidden sm:block">{user?.name?.split(' ')[0]}</span>
             </Link>
           </div>
         </nav>

@@ -1,10 +1,14 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User, AuthState } from '../types';
-import { authApi } from '../services/api';
+import { createContext, useContext, useEffect, ReactNode } from 'react';
+import { useAuthStore } from '../store/authStore';
+import { useSocketStore } from '../store/socketStore';
+import type { User } from '../types';
 
-interface AuthContextType extends AuthState {
+interface AuthContextType {
+  user: User | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (data: any) => Promise<void>;
+  register: (data: { name: string; email: string; password: string; role?: string }) => Promise<void>;
   logout: () => void;
   updateUser: (user: User) => void;
 }
@@ -12,84 +16,59 @@ interface AuthContextType extends AuthState {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<AuthState>({
-    user: null,
-    token: null,
-    isAuthenticated: false,
-    isLoading: true,
-  });
+  const { user, isAuthenticated, isLoading, login: storeLogin, register: storeRegister, logout: storeLogout, setUser, checkAuth } = useAuthStore();
+  const { connect, disconnect } = useSocketStore();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const userStr = localStorage.getItem('user');
-    
-    if (token && userStr) {
-      try {
-        const user = JSON.parse(userStr);
-        setState({
-          user,
-          token,
-          isAuthenticated: true,
-          isLoading: false,
-        });
-      } catch {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        setState({ ...state, isLoading: false });
-      }
-    } else {
-      setState({ ...state, isLoading: false });
-    }
+    checkAuth();
   }, []);
 
+  useEffect(() => {
+    const token = useAuthStore.getState().accessToken;
+    if (token && isAuthenticated) {
+      connect(token);
+    } else {
+      disconnect();
+    }
+  }, [isAuthenticated]);
+
   const login = async (email: string, password: string) => {
-    const response = await authApi.login({ email, password });
-    const { user, token } = response.data.data;
-    
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(user));
-    
-    setState({
-      user,
-      token,
-      isAuthenticated: true,
-      isLoading: false,
-    });
+    await storeLogin(email, password);
+    const { accessToken } = useAuthStore.getState();
+    if (accessToken) {
+      connect(accessToken);
+    }
   };
 
-  const register = async (data: any) => {
-    const response = await authApi.register(data);
-    const { user, token } = response.data.data;
-    
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(user));
-    
-    setState({
-      user,
-      token,
-      isAuthenticated: true,
-      isLoading: false,
-    });
+  const register = async (data: { name: string; email: string; password: string; role?: string }) => {
+    await storeRegister(data);
+    const { accessToken } = useAuthStore.getState();
+    if (accessToken) {
+      connect(accessToken);
+    }
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setState({
-      user: null,
-      token: null,
-      isAuthenticated: false,
-      isLoading: false,
-    });
+    storeLogout();
+    disconnect();
   };
 
-  const updateUser = (user: User) => {
-    localStorage.setItem('user', JSON.stringify(user));
-    setState((prev) => ({ ...prev, user }));
+  const updateUser = (updatedUser: User) => {
+    setUser(updatedUser);
   };
 
   return (
-    <AuthContext.Provider value={{ ...state, login, register, logout, updateUser }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated,
+        isLoading,
+        login,
+        register,
+        logout,
+        updateUser,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

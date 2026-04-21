@@ -1,24 +1,23 @@
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
-import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, Calendar, Clock, BookOpen, User, Star } from 'lucide-react';
+import { Link, useParams, useNavigate } from 'react-router-dom';
+import { ArrowLeft, BookOpen } from 'lucide-react';
 import Layout from '../components/Layout';
 import Modal from '../components/Modal';
-import { skillsApi, sessionsApi } from '../services/api';
+import { skillApi, requestApi, userApi } from '../services/api';
 import toast from 'react-hot-toast';
-import { UserSkill } from '../types';
+import type { User, UserSkill } from '../types';
 
 export default function BookSession() {
   const { mentorId } = useParams<{ mentorId: string }>();
+  const navigate = useNavigate();
+  const [mentor, setMentor] = useState<User | null>(null);
   const [mentorSkills, setMentorSkills] = useState<UserSkill[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedSkill, setSelectedSkill] = useState<UserSkill | null>(null);
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    scheduled_date: '',
-    scheduled_time: '',
+    message: '',
+    type: 'LEARN' as 'LEARN' | 'EXCHANGE' | 'PAID',
   });
 
   useEffect(() => {
@@ -27,10 +26,18 @@ export default function BookSession() {
 
   const fetchData = async () => {
     try {
-      const skillsRes = await skillsApi.getUserSkills(mentorId as string);
-      setMentorSkills(skillsRes.data.data);
+      const [mentorRes, skillsRes] = await Promise.all([
+        userApi.getById(mentorId as string),
+        skillApi.getMySkills(),
+      ]);
+      setMentor(mentorRes.data.data);
+      
+      // Filter to show skills the user can teach (HAVE)
+      const allSkills = skillsRes.data.data || [];
+      const haveSkills = allSkills.filter((s: UserSkill) => s.type === 'HAVE');
+      setMentorSkills(haveSkills);
     } catch (error) {
-      toast.error('Failed to load mentor data');
+      toast.error('Failed to load data');
     } finally {
       setLoading(false);
     }
@@ -38,23 +45,21 @@ export default function BookSession() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedSkill) return;
+    if (!selectedSkill || !mentorId) return;
 
     try {
-      const scheduledDate = new Date(`${formData.scheduled_date}T${formData.scheduled_time}`);
-      await sessionsApi.create({
-        mentor_id: mentorId as string,
-        skillId: selectedSkill.skillId,
-        title: formData.title,
-        description: formData.description,
-        scheduled_date: scheduledDate.toISOString(),
+      await requestApi.create({
+        receiverId: mentorId,
+        offeredSkill: '', // Will be filled by receiver
+        wantedSkill: selectedSkill.skillId,
+        type: formData.type,
+        message: formData.message,
       });
-      toast.success('Session request sent!');
+      toast.success('Request sent!');
       setModalOpen(false);
-      setFormData({ title: '', description: '', scheduled_date: '', scheduled_time: '' });
-      setTimeout(() => window.location.href = '/sessions', 1500);
+      setTimeout(() => navigate('/requests'), 1500);
     } catch (error: any) {
-      const message = error?.response?.data?.error || error?.message || 'Failed to book session';
+      const message = error?.response?.data?.message || error?.message || 'Failed to send request';
       toast.error(message);
     }
   };
@@ -68,7 +73,9 @@ export default function BookSession() {
             <span className="text-sm">Back to Browse</span>
           </Link>
           <h1 className="text-4xl font-normal mb-2 gradient-text" style={{ letterSpacing: '-0.02em' }}>Book a Session</h1>
-          <p style={{ color: 'rgba(255,255,255,0.5)' }}>Select a skill and schedule your learning session.</p>
+          {mentor && (
+            <p style={{ color: 'rgba(255,255,255,0.5)' }}>with {mentor.name}</p>
+          )}
         </div>
 
         {loading ? (
@@ -78,14 +85,11 @@ export default function BookSession() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {mentorSkills.map((us) => (
-              <motion.div
+              <div
                 key={us.id}
-                whileHover={{ scale: 1.02, borderColor: 'rgba(62, 207, 142, 0.5)' }}
-                whileTap={{ scale: 0.98 }}
                 className="elevated-card cursor-pointer p-5"
                 onClick={() => {
                   setSelectedSkill(us);
-                  setFormData({ ...formData, title: `${us.skill.name} Session` });
                   setModalOpen(true);
                 }}
               >
@@ -93,25 +97,20 @@ export default function BookSession() {
                   <div className="p-3 rounded-xl" style={{ background: 'rgba(62, 207, 142, 0.15)' }}>
                     <BookOpen size={22} style={{ color: '#3ecf8e' }} />
                   </div>
-                  <span className="px-2 py-1 rounded-full text-xs capitalize" style={{ 
-                    background: 'rgba(120, 64, 255, 0.15)', 
-                    color: '#7840ff',
-                    border: '1px solid rgba(120, 64, 255, 0.3)'
-                  }}>
-                    {us.proficiency_level}
-                  </span>
+                  {us.isPaid && us.price && (
+                    <span className="px-2 py-1 rounded-full text-xs" style={{ 
+                      background: 'rgba(120, 64, 255, 0.15)', 
+                      color: '#7840ff',
+                      border: '1px solid rgba(120, 64, 255, 0.3)'
+                    }}>
+                      ₹{us.price}
+                    </span>
+                  )}
                 </div>
                 
                 <h3 className="font-normal text-lg mb-1" style={{ letterSpacing: '-0.02em' }}>{us.skill.name}</h3>
-                <p className="text-sm mb-3" style={{ color: '#555' }}>{us.skill.category?.name}</p>
-                
-                <div className="flex items-center gap-3 text-sm" style={{ color: '#555' }}>
-                  <div className="flex items-center gap-1">
-                    <Clock size={14} />
-                    <span>{us.years_of_experience} years</span>
-                  </div>
-                </div>
-              </motion.div>
+                <p className="text-sm mb-3" style={{ color: '#555' }}>{us.skill.category}</p>
+              </div>
             ))}
           </div>
         )}
@@ -120,64 +119,34 @@ export default function BookSession() {
       <Modal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={selectedSkill ? `Book: ${selectedSkill.skill.name}` : 'Book Session'}
+        title={selectedSkill ? `Request: ${selectedSkill.skill.name}` : 'Book Session'}
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="label">Session Title</label>
-            <input
-              type="text"
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            <label className="label">Request Type</label>
+            <select
+              value={formData.type}
+              onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
               className="input-field"
-              placeholder="e.g., Introduction to Python"
-              required
-            />
+            >
+              <option value="LEARN">Learn (Free)</option>
+              <option value="EXCHANGE">Skill Exchange</option>
+              <option value="PAID">Paid Class</option>
+            </select>
           </div>
 
           <div>
-            <label className="label">Description (optional)</label>
+            <label className="label">Message (optional)</label>
             <textarea
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              value={formData.message}
+              onChange={(e) => setFormData({ ...formData, message: e.target.value })}
               className="input-field min-h-[80px] resize-none"
-              placeholder="What would you like to learn?"
+              placeholder="Introduce yourself..."
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="label flex items-center gap-2">
-                <Calendar size={14} />
-                Date
-              </label>
-              <input
-                type="date"
-                value={formData.scheduled_date}
-                onChange={(e) => setFormData({ ...formData, scheduled_date: e.target.value })}
-                className="input-field"
-                min={new Date().toISOString().split('T')[0]}
-                required
-              />
-            </div>
-            <div>
-              <label className="label flex items-center gap-2">
-                <Clock size={14} />
-                Time
-              </label>
-              <input
-                type="time"
-                value={formData.scheduled_time}
-                onChange={(e) => setFormData({ ...formData, scheduled_time: e.target.value })}
-                className="input-field"
-                required
-              />
-            </div>
-          </div>
-
           <button type="submit" className="pill-btn pill-btn-primary w-full mt-6 flex items-center justify-center gap-2">
-            <Calendar size={18} />
-            Request Session
+            Send Request
           </button>
         </form>
       </Modal>

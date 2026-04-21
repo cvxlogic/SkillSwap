@@ -13,6 +13,9 @@ import Notifications from './pages/Notifications';
 import Requests from './pages/Requests';
 import Profile from './pages/Profile';
 import Favorites from './pages/Favorites';
+import Messages from './pages/Messages';
+import Settings from './pages/Settings';
+import Admin from './pages/Admin';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
@@ -50,6 +53,24 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const { user, isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading || !isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#171717' }}>
+        <div className="w-8 h-8 border-2 rounded-full animate-spin" style={{ borderColor: '#3ecf8e', borderTopColor: 'transparent' }} />
+      </div>
+    );
+  }
+
+  if (!user?.isAdmin) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return <>{children}</>;
+}
+
 function AppRoutes() {
   return (
     <Routes>
@@ -61,11 +82,17 @@ function AppRoutes() {
       <Route path="/browse" element={<ProtectedRoute><BrowseMentors /></ProtectedRoute>} />
       <Route path="/sessions" element={<ProtectedRoute><Sessions /></ProtectedRoute>} />
       <Route path="/sessions/book/:mentorId" element={<ProtectedRoute><BookSession /></ProtectedRoute>} />
+      <Route path="/requests" element={<ProtectedRoute><Requests /></ProtectedRoute>} />
+      <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+      <Route path="/messages/:conversationId" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
       <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
       <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
-      <Route path="/requests" element={<ProtectedRoute><Requests /></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+      <Route path="/profile/:id" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+      <Route path="/profile/edit" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       <Route path="/favorites" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
+      <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+      <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
       
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />

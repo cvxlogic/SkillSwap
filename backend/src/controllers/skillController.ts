@@ -1,243 +1,270 @@
 import { Request, Response } from 'express';
-import { skillService } from '../services/skillService';
+import prisma from '../utils/prisma';
+import { asyncHandler } from '../services/errorService';
 import { AuthRequest } from '../middleware/auth';
 
-export class SkillController {
-  async getAllSkills(req: Request, res: Response) {
-    try {
-      const { category_id } = req.query;
-      const skills = category_id
-        ? await skillService.getSkillsByCategory(category_id as string)
-        : await skillService.getAllSkills();
-      
-      res.json({
-        success: true,
-        data: skills,
-      });
-    } catch (error: any) {
-      res.status(500).json({
-        success: false,
-        error: error.message,
-      });
-    }
+/**
+ * Get all skills with categories
+ */
+export const getSkills = asyncHandler(async (req: Request, res: Response) => {
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 50;
+  const skip = (page - 1) * limit;
+
+  const category = req.query.category as string;
+
+  const where = category ? { category } : {};
+
+  const [skills, total] = await Promise.all([
+    prisma.skill.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: { name: 'asc' },
+    }),
+    prisma.skill.count({ where }),
+  ]);
+
+  res.json({
+    success: true,
+    data: {
+      skills,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+    },
+  });
+});
+
+/**
+ * Get skill categories
+ */
+export const getCategories = asyncHandler(async (req: Request, res: Response) => {
+  const categories = await prisma.skill.groupBy({
+    by: ['category'],
+    _count: { category: true },
+  });
+
+  res.json({
+    success: true,
+    data: categories.map((c) => ({
+      name: c.category,
+      count: c._count.category,
+    })),
+  });
+});
+
+/**
+ * Create a new skill
+ */
+export const createSkill = asyncHandler(async (req: Request, res: Response) => {
+  const { name, category } = req.body;
+
+  const normalizedName = name.toLowerCase().trim();
+
+  const existingSkill = await prisma.skill.findUnique({
+    where: { name: normalizedName },
+  });
+
+  if (existingSkill) {
+    return res.status(409).json({
+      success: false,
+      message: 'Skill already exists',
+    });
   }
 
-  async getCategories(req: Request, res: Response) {
-    try {
-      const categories = await skillService.getCategories();
-      res.json({
-        success: true,
-        data: categories,
-      });
-    } catch (error: any) {
-      res.status(500).json({
-        success: false,
-        error: error.message,
-      });
-    }
+  const skill = await prisma.skill.create({
+    data: {
+      name: normalizedName,
+      category: category.toLowerCase().trim(),
+    },
+  });
+
+  res.status(201).json({
+    success: true,
+    data: skill,
+  });
+});
+
+/**
+ * Add skill to my profile
+ */
+export const addMySkill = asyncHandler(async (req: Request, res: Response) => {
+  const authReq = req as AuthRequest;
+  const { skillId, type, isPaid, price } = req.body;
+
+  const existingUserSkill = await prisma.userSkill.findUnique({
+    where: {
+      userId_skillId: {
+        userId: authReq.user!.id,
+        skillId,
+      },
+    },
+  });
+
+  if (existingUserSkill) {
+    return res.status(409).json({
+      success: false,
+      message: 'Skill already added to profile',
+    });
   }
 
-  async getUserSkills(req: Request, res: Response) {
-    try {
-      const userId = req.params.userId;
-      const skills = await skillService.getUserSkills(userId);
-      res.json({
-        success: true,
-        data: skills,
-      });
-    } catch (error: any) {
-      res.status(500).json({
-        success: false,
-        error: error.message,
-      });
-    }
+  const userSkill = await prisma.userSkill.create({
+    data: {
+      userId: authReq.user!.id,
+      skillId,
+      type,
+      isPaid: isPaid || false,
+      price,
+    },
+    include: { skill: true },
+  });
+
+  res.status(201).json({
+    success: true,
+    data: userSkill,
+  });
+});
+
+/**
+ * Remove skill from my profile
+ */
+export const removeMySkill = asyncHandler(async (req: Request, res: Response) => {
+  const authReq = req as AuthRequest;
+  const { skillId } = req.params;
+
+  await prisma.userSkill.deleteMany({
+    where: {
+      userId: authReq.user!.id,
+      skillId,
+    },
+  });
+
+  res.json({
+    success: true,
+    message: 'Skill removed from profile',
+  });
+});
+
+/**
+ * Update my skill
+ */
+export const updateMySkill = asyncHandler(async (req: Request, res: Response) => {
+  const authReq = req as AuthRequest;
+  const { skillId } = req.params;
+  const { isPaid, price } = req.body;
+
+  const userSkill = await prisma.userSkill.updateMany({
+    where: {
+      userId: authReq.user!.id,
+      skillId,
+    },
+    data: { isPaid, price },
+  });
+
+  if (userSkill.count === 0) {
+    return res.status(404).json({
+      success: false,
+      message: 'Skill not found in your profile',
+    });
   }
 
-  async addUserSkill(req: AuthRequest, res: Response) {
-    try {
-      const userId = req.user!.userId;
-      const { skill_id, proficiency_level, years_of_experience } = req.body;
-      
-      const userSkill = await skillService.addUserSkill(
-        userId,
-        skill_id,
-        proficiency_level,
-        years_of_experience
-      );
-      
-      res.status(201).json({
-        success: true,
-        data: userSkill,
-        message: 'Skill added successfully',
-      });
-    } catch (error: any) {
-      res.status(400).json({
-        success: false,
-        error: error.message,
-      });
-    }
+  const updated = await prisma.userSkill.findFirst({
+    where: {
+      userId: authReq.user!.id,
+      skillId,
+    },
+    include: { skill: true },
+  });
+
+  res.json({
+    success: true,
+    data: updated,
+  });
+});
+
+/**
+ * Get my skills
+ */
+export const getMySkills = asyncHandler(async (req: Request, res: Response) => {
+  const authReq = req as AuthRequest;
+  const type = req.query.type as 'HAVE' | 'WANT';
+
+  const where: any = { userId: authReq.user!.id };
+  if (type) {
+    where.type = type;
   }
 
-  async updateUserSkill(req: AuthRequest, res: Response) {
-    try {
-      const userId = req.user!.userId;
-      const userSkillId = req.params.id;
-      const { proficiency_level, years_of_experience } = req.body;
-      
-      const userSkill = await skillService.updateUserSkill(
-        userSkillId,
-        userId,
-        proficiency_level,
-        years_of_experience
-      );
-      
-      res.json({
-        success: true,
-        data: userSkill,
-        message: 'Skill updated successfully',
-      });
-    } catch (error: any) {
-      res.status(400).json({
-        success: false,
-        error: error.message,
-      });
-    }
+  const skills = await prisma.userSkill.findMany({
+    where,
+    include: { skill: true },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  res.json({
+    success: true,
+    data: skills,
+  });
+});
+
+/**
+ * Get users with a specific skill
+ */
+export const getUsersBySkill = asyncHandler(async (req: Request, res: Response) => {
+  const { skillId } = req.params;
+  const type = req.query.type as 'HAVE' | 'WANT';
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 20;
+  const skip = (page - 1) * limit;
+
+  const where: any = {
+    skillId,
+    user: { isSuspended: false },
+  };
+  if (type) {
+    where.type = type;
   }
 
-  async deleteUserSkill(req: AuthRequest, res: Response) {
-    try {
-      const userId = req.user!.userId;
-      const userSkillId = req.params.id;
-      
-      await skillService.deleteUserSkill(userSkillId, userId);
-      
-      res.json({
-        success: true,
-        message: 'Skill removed successfully',
-      });
-    } catch (error: any) {
-      res.status(400).json({
-        success: false,
-        error: error.message,
-      });
-    }
-  }
+  const [userSkills, total] = await Promise.all([
+    prisma.userSkill.findMany({
+      where,
+      skip,
+      take: limit,
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            profilePic: true,
+            bio: true,
+            isOnline: true,
+            role: true,
+            receivedRatings: { select: { stars: true } },
+          },
+        },
+      },
+    }),
+    prisma.userSkill.count({ where }),
+  ]);
 
-  async searchUsers(req: Request, res: Response) {
-    try {
-      const { skill_id, q } = req.query;
-      const users = await skillService.searchUsersBySkill(
-        skill_id as string | undefined,
-        q as string | undefined
-      );
-      
-      const formattedUsers = users.map((u: any) => ({
-        ...u,
-        user_id: u.id,
-        user_skills: u.user_skills.map((us: any) => ({
-          ...us,
-          user_skill_id: us.id,
-          skill_id: us.skillId,
-        })),
-      }));
-      
-      res.json({
-        success: true,
-        data: formattedUsers,
-      });
-    } catch (error: any) {
-      res.status(500).json({
-        success: false,
-        error: error.message,
-      });
-    }
-  }
+  const formattedUsers = userSkills.map((us) => ({
+    ...us.user,
+    avgRating: us.user.receivedRatings.length > 0
+      ? us.user.receivedRatings.reduce((acc, r) => acc + r.stars, 0) / us.user.receivedRatings.length
+      : 0,
+    ratingsCount: us.user.receivedRatings.length,
+    isPaid: us.isPaid,
+    price: us.price,
+    receivedRatings: undefined,
+  }));
 
-  async getLearningGoals(req: AuthRequest, res: Response) {
-    try {
-      const userId = req.user!.userId;
-      const goals = await skillService.getLearningGoals(userId);
-      res.json({
-        success: true,
-        data: goals,
-      });
-    } catch (error: any) {
-      res.status(500).json({
-        success: false,
-        error: error.message,
-      });
-    }
-  }
-
-  async addLearningGoal(req: AuthRequest, res: Response) {
-    try {
-      const userId = req.user!.userId;
-      const { skill_id, description, priority } = req.body;
-      const goal = await skillService.addLearningGoal(userId, skill_id, description, priority);
-      res.status(201).json({
-        success: true,
-        data: goal,
-        message: 'Learning goal added',
-      });
-    } catch (error: any) {
-      res.status(400).json({
-        success: false,
-        error: error.message,
-      });
-    }
-  }
-
-  async updateLearningGoal(req: AuthRequest, res: Response) {
-    try {
-      const userId = req.user!.userId;
-      const goalId = req.params.id;
-      const { status, priority } = req.body;
-      const goal = await skillService.updateLearningGoal(goalId, userId, status, priority);
-      res.json({
-        success: true,
-        data: goal,
-        message: 'Learning goal updated',
-      });
-    } catch (error: any) {
-      res.status(400).json({
-        success: false,
-        error: error.message,
-      });
-    }
-  }
-
-  async deleteLearningGoal(req: AuthRequest, res: Response) {
-    try {
-      const userId = req.user!.userId;
-      const goalId = req.params.id;
-      await skillService.deleteLearningGoal(goalId, userId);
-      res.json({
-        success: true,
-        message: 'Learning goal removed',
-      });
-    } catch (error: any) {
-      res.status(400).json({
-        success: false,
-        error: error.message,
-      });
-    }
-  }
-
-  async getSuggestedMentorsForGoal(req: AuthRequest, res: Response) {
-    try {
-      const goalId = req.params.id;
-      const mentors = await skillService.getSuggestedMentorsForGoal(goalId);
-      res.json({
-        success: true,
-        data: mentors,
-      });
-    } catch (error: any) {
-      res.status(400).json({
-        success: false,
-        error: error.message,
-      });
-    }
-  }
-}
-
-export const skillController = new SkillController();
+  res.json({
+    success: true,
+    data: {
+      users: formattedUsers,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+    },
+  });
+});

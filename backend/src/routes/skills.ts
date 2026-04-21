@@ -1,23 +1,19 @@
 import { Router } from 'express';
-import { skillController } from '../controllers/skillController';
+import * as skillController from '../controllers/skillController';
 import { authenticate } from '../middleware/auth';
-import { validate, userSkillSchema } from '../middleware/validate';
+import { validate, skillSchema, userSkillSchema, updateUserSkillSchema } from '../middleware/validate';
 
 const router = Router();
 
-router.get('/', skillController.getAllSkills.bind(skillController));
-router.get('/categories', skillController.getCategories.bind(skillController));
-router.get('/users/search', skillController.searchUsers.bind(skillController));
-router.get('/users/:userId', skillController.getUserSkills.bind(skillController));
+router.use(authenticate);
 
-router.post('/', authenticate, validate(userSkillSchema), skillController.addUserSkill.bind(skillController));
-router.patch('/:id', authenticate, skillController.updateUserSkill.bind(skillController));
-router.delete('/:id', authenticate, skillController.deleteUserSkill.bind(skillController));
-
-router.get('/learning-goals', authenticate, skillController.getLearningGoals.bind(skillController));
-router.post('/learning-goals', authenticate, skillController.addLearningGoal.bind(skillController));
-router.patch('/learning-goals/:id', authenticate, skillController.updateLearningGoal.bind(skillController));
-router.delete('/learning-goals/:id', authenticate, skillController.deleteLearningGoal.bind(skillController));
-router.get('/learning-goals/:id/suggested-mentors', authenticate, skillController.getSuggestedMentorsForGoal.bind(skillController));
+router.get('/', skillController.getSkills);
+router.get('/categories', skillController.getCategories);
+router.get('/my', skillController.getMySkills);
+router.get('/users/:skillId', skillController.getUsersBySkill);
+router.post('/', validate(skillSchema), skillController.createSkill);
+router.post('/my', validate(userSkillSchema), skillController.addMySkill);
+router.patch('/my/:skillId', validate(updateUserSkillSchema), skillController.updateMySkill);
+router.delete('/my/:skillId', skillController.removeMySkill);
 
 export default router;

@@ -3,59 +3,124 @@ generator client {
 }
 
 datasource db {
-  provider = "mongodb"
+  provider = "postgresql"
   url = env("DATABASE_URL")
 }
 
-model User {
-  id            String    @id @default(auto()) @map("_id") @db.ObjectId
-  roll_number   String    @unique
-  full_name     String
-  email         String    @unique
-  password_hash String
-  role          String    @default("student")
-  department    String?
-  avg_rating    Float     @default(0)
-  bio           String?
-  avatar_url   String?
-  created_at    DateTime  @default(now())
-
-  user_skills        UserSkill[]
-  mentor_sessions   SkillSession[] @relation("MentorSessions")
-  mentee_sessions   SkillSession[] @relation("MenteeSessions")
-  reviews           SessionReview[] @relation("ReviewerReviews")
-  notifications     Notification[]
-  learning_goals   LearningGoal[]
-  sent_requests    MentorRequest[] @relation("RequesterRequests")
-  received_requests MentorRequest[] @relation("ReceiverRequests")
+enum UserRole {
+  STUDENT
+  TEACHER
+  EXCHANGER
+  OTHER
 }
 
-model SkillCategory {
-  id   String  @id @default(auto()) @map("_id") @db.ObjectId
-  name String  @unique
+enum SkillType {
+  HAVE
+  WANT
+}
 
-  skills Skill[]
+enum RequestType {
+  EXCHANGE
+  LEARN
+  PAID
+}
+
+enum RequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  FILE
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum ReportReason {
+  SPAM
+  ABUSE
+  BAD_TEACHING
+  INAPPROPRIATE
+  OTHER
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWED
+  ACTION_TAKEN
+  DISMISSED
+}
+
+enum NotificationType {
+  REQUEST
+  MESSAGE
+  RATING
+  PAYMENT
+  REPORT
+  SYSTEM
+}
+
+model User {
+  id            String    @id @default(uuid())
+  name         String
+  email        String    @unique
+  password     String
+  googleId     String?   @unique
+  phone        String?
+  phoneVerified Boolean  @default(false)
+  profilePic   String?
+  role         UserRole  @default(STUDENT)
+  bio          String?
+  isOnline     Boolean   @default(false)
+  lastSeen     DateTime  @default(now())
+  isSuspended  Boolean   @default(false)
+  isAdmin      Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  userSkills         UserSkill[]
+  sentRequests      SkillRequest[] @relation("SenderRequests")
+  receivedRequests  SkillRequest[] @relation("ReceiverRequests")
+  sentMessages      Message[]      @relation("SenderMessages")
+  sentRatings       Rating[]       @relation("RaterRatings")
+  receivedRatings  Rating[]       @relation("ReceivedRatings")
+  paymentsMade      Payment[]      @relation("PayerPayments")
+  paymentsReceived  Payment[]     @relation("PayeePayments")
+  sentReports       Report[]      @relation("ReporterReports")
+  receivedReports  Report[]      @relation("ReportedReports")
+  notifications    Notification[]
+  conversations     ConversationParticipant[]
+  refreshTokens     RefreshToken[]
 }
 
 model Skill {
-  id         String        @id @default(auto()) @map("_id") @db.ObjectId
-  name       String
-  categoryId String?       @db.ObjectId
-  category   SkillCategory? @relation(fields: [categoryId], references: [id])
+  id       String  @id @default(uuid())
+  name     String  @unique
+  category String
+  createdAt DateTime @default(now())
 
-  user_skills       UserSkill[]
-  sessions        SkillSession[]
-  learning_goals   LearningGoal[]
-  mentor_requests MentorRequest[]
+  userSkills UserSkill[]
+  requests  SkillRequest[] @relation("OfferedSkillRequests")
+  wantedRequests SkillRequest[] @relation("WantedSkillRequests")
 }
 
 model UserSkill {
-  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId              String   @db.ObjectId
-  skillId             String   @db.ObjectId
-  proficiency_level   String
-  years_of_experience Int      @default(0)
-  created_at          DateTime @default(now())
+  id         String    @id @default(uuid())
+  userId    String
+  skillId   String
+  type      SkillType
+  isPaid    Boolean   @default(false)
+  price     Float?
+  createdAt DateTime  @default(now())
 
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
   skill Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
@@ -63,68 +128,147 @@ model UserSkill {
   @@unique([userId, skillId])
 }
 
-model SkillSession {
-  id             String   @id @default(auto()) @map("_id") @db.ObjectId
-  mentorId       String   @db.ObjectId
-  menteeId       String   @db.ObjectId
-  skillId        String   @db.ObjectId
-  title          String
-  description    String?
-  scheduled_date DateTime
-  status         String   @default("pending")
-  created_at     DateTime @default(now())
+model SkillRequest {
+  id            String    @id @default(uuid())
+  senderId     String
+  receiverId   String
+  offeredSkill String
+  wantedSkill  String
+  type         RequestType
+  status       RequestStatus @default(PENDING)
+  message      String?
+  createdAt    DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  mentor User            @relation("MentorSessions", fields: [mentorId], references: [id], onDelete: Cascade)
-  mentee User            @relation("MenteeSessions", fields: [menteeId], references: [id], onDelete: Cascade)
-  skill  Skill           @relation(fields: [skillId], references: [id], onDelete: Cascade)
-  review SessionReview?
+  sender      User   @relation("SenderRequests", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver    User   @relation("ReceiverRequests", fields: [receiverId], references: [id], onDelete: Cascade)
+  offeredSkillRef Skill @relation("OfferedSkillRequests", fields: [offeredSkill], references: [id], onDelete: Cascade)
+  wantedSkillRef Skill @relation("WantedSkillRequests", fields: [wantedSkill], references: [id], onDelete: Cascade)
+
+  conversation Conversation?
+  ratings      Rating[]
+  payments     Payment[]
 }
 
-model SessionReview {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  sessionId  String   @unique @db.ObjectId
-  reviewerId String   @db.ObjectId
-  rating     Float
-  comment    String?
-  created_at DateTime @default(now())
+model Conversation {
+  id         String    @id @default(uuid())
+  requestId  String    @unique
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
-  session  SkillSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  reviewer User         @relation("ReviewerReviews", fields: [reviewerId], references: [id], onDelete: Cascade)
+  request      SkillRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  participants ConversationParticipant[]
+  messages     Message[]
+}
+
+model ConversationParticipant {
+  id             String    @id @default(uuid())
+  conversationId String
+  userId         String
+  joinedAt       DateTime  @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+}
+
+model Message {
+  id             String    @id @default(uuid())
+  conversationId String
+  senderId       String
+  content        String
+  type           MessageType @default(TEXT)
+  read           Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User        @relation("SenderMessages", fields: [senderId], references: [id], onDelete: Cascade)
+}
+
+model Rating {
+  id        String    @id @default(uuid())
+  raterId   String
+  ratedId   String
+  requestId String
+  stars     Int
+  review    String?
+  createdAt DateTime  @default(now())
+
+  rater   User         @relation("RaterRatings", fields: [raterId], references: [id], onDelete: Cascade)
+  rated   User         @relation("ReceivedRatings", fields: [ratedId], references: [id], onDelete: Cascade)
+  request SkillRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  @@unique([raterId, requestId])
+}
+
+model Payment {
+  id         String    @id @default(uuid())
+  payerId    String
+  payeeId    String
+  requestId String
+  amount     Float
+  currency   String    @default("INR")
+  razorpayId String?
+  status     PaymentStatus @default(PENDING)
+  createdAt  DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  payer   User         @relation("PayerPayments", fields: [payerId], references: [id], onDelete: Cascade)
+  payee   User         @relation("PayeePayments", fields: [payeeId], references: [id], onDelete: Cascade)
+  request SkillRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+}
+
+model Report {
+  id           String    @id @default(uuid())
+  reporterId   String
+  reportedId   String
+  reason       ReportReason
+  description  String
+  status       ReportStatus @default(PENDING)
+  adminNote    String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  reporter User @relation("ReporterReports", fields: [reporterId], references: [id], onDelete: Cascade)
+  reported User @relation("ReportedReports", fields: [reportedId], references: [id], onDelete: Cascade)
 }
 
 model Notification {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId     String   @db.ObjectId
-  message    String
-  is_read    Boolean  @default(false)
-  created_at DateTime @default(now())
+  id        String    @id @default(uuid())
+  userId    String
+  type      NotificationType
+  title     String
+  body      String
+  read      Boolean   @default(false)
+  link      String?
+  createdAt DateTime  @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model LearningGoal {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String   @db.ObjectId
-  skillId     String   @db.ObjectId
-  description String?
-  status      String   @default("wanted") // wanted, learning, completed
-  priority    String   @default("medium") // low, medium, high
-  created_at  DateTime  @default(now())
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
 
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  skill Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
-model MentorRequest {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  requesterId String   @db.ObjectId
-  receiverId String   @db.ObjectId
-  skillId    String   @db.ObjectId
-  message    String?
-  status     String   @default("pending") // pending, accepted, rejected
-  created_at DateTime  @default(now())
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  action    String
+  resource  String
+  resourceId String?
+  details   Json?
+  ipAddress String?
+  createdAt DateTime  @default(now())
 
-  requester User  @relation("RequesterRequests", fields: [requesterId], references: [id], onDelete: Cascade)
-  receiver  User  @relation("ReceiverRequests", fields: [receiverId], references: [id], onDelete: Cascade)
-  skill     Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  @@index([userId])
+  @@index([resource, resourceId])
 }

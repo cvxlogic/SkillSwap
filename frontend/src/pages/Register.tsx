@@ -3,46 +3,35 @@ import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
-import { skillsApi } from '../services/api';
-import { Skill, SkillCategory } from '../types';
+import { skillApi } from '../services/api';
+import type { Skill } from '../types';
 
 export default function Register() {
   const [formData, setFormData] = useState({
-    roll_number: '',
-    full_name: '',
+    name: '',
     email: '',
     password: '',
-    role: 'student',
-    department: '',
+    role: 'STUDENT',
   });
-  const [learningSkill, setLearningSkill] = useState('');
-  const [categories, setCategories] = useState<SkillCategory[]>([]);
   const [skills, setSkills] = useState<Skill[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedSkill, setSelectedSkill] = useState('');
+  const [skillType, setSkillType] = useState<'HAVE' | 'WANT'>('WANT');
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchSkillsData();
+    fetchSkills();
   }, []);
 
-  const fetchSkillsData = async () => {
+  const fetchSkills = async () => {
     try {
-      const [catsRes, skillsRes] = await Promise.all([
-        skillsApi.getCategories(),
-        skillsApi.getAll(),
-      ]);
-      setCategories(catsRes.data.data);
-      setSkills(skillsRes.data.data);
+      const response = await skillApi.getAll();
+      setSkills(response.data.data.skills);
     } catch (error) {
       console.error('Failed to load skills:', error);
     }
   };
-
-  const filteredSkills = selectedCategory
-    ? skills.filter((s) => s.categoryId === selectedCategory)
-    : skills;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -53,24 +42,23 @@ export default function Register() {
     setLoading(true);
     
     try {
-      const userData = { ...formData };
-      await register(userData);
+      await register(formData);
       
-      if (learningSkill && formData.role === 'student') {
+      if (selectedSkill) {
         try {
-          await skillsApi.addLearningGoal({
-            skill_id: learningSkill,
-            priority: 'high',
+          await skillApi.addMySkill({
+            skillId: selectedSkill,
+            type: skillType,
           });
-        } catch (goalError) {
-          console.error('Failed to add learning goal:', goalError);
+        } catch (skillError) {
+          console.error('Failed to add skill:', skillError);
         }
       }
       
       toast.success('Account created successfully!');
       navigate('/dashboard');
     } catch (error: any) {
-      const message = error?.response?.data?.error || error?.message || 'Registration failed';
+      const message = error?.response?.data?.message || error?.message || 'Registration failed';
       toast.error(message);
     } finally {
       setLoading(false);
@@ -94,31 +82,17 @@ export default function Register() {
           </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="label">Roll Number</label>
-              <input
-                type="text"
-                name="roll_number"
-                value={formData.roll_number}
-                onChange={handleChange}
-                className="input-field"
-                placeholder="MCA2024001"
-                required
-              />
-            </div>
-            <div>
-              <label className="label">Full Name</label>
-              <input
-                type="text"
-                name="full_name"
-                value={formData.full_name}
-                onChange={handleChange}
-                className="input-field"
-                placeholder="John Doe"
-                required
-              />
-            </div>
+          <div>
+            <label className="label">Full Name</label>
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              className="input-field"
+              placeholder="John Doe"
+              required
+            />
           </div>
 
           <div>
@@ -142,77 +116,52 @@ export default function Register() {
               value={formData.password}
               onChange={handleChange}
               className="input-field"
-              placeholder="Min 6 characters"
+              placeholder="Min 8 characters"
               required
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="label">Role</label>
-              <select
-                name="role"
-                value={formData.role}
-                onChange={handleChange}
-                className="input-field"
-              >
-                <option value="student">Student</option>
-                <option value="faculty">Faculty</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="label">Department</label>
-              <input
-                type="text"
-                name="department"
-                value={formData.department}
-                onChange={handleChange}
-                className="input-field"
-                placeholder="MCA"
-              />
-            </div>
+          <div>
+            <label className="label">Role</label>
+            <select
+              name="role"
+              value={formData.role}
+              onChange={handleChange}
+              className="input-field"
+            >
+              <option value="STUDENT">Student</option>
+              <option value="TEACHER">Teacher</option>
+              <option value="EXCHANGER">Exchanger</option>
+            </select>
           </div>
 
-          {formData.role === 'student' && (
-            <div className="p-5 rounded-xl" style={{ 
-              background: 'linear-gradient(135deg, rgba(120, 64, 255, 0.08) 0%, rgba(62, 207, 142, 0.05) 100%)',
-              border: '1px solid rgba(120, 64, 255, 0.15)'
-            }}>
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-lg">🎯</span>
-                <label className="label mb-0">I want to learn</label>
-              </div>
-              <p className="text-xs mb-4" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                Select a skill you're interested in learning - we'll help you find mentors!
-              </p>
-              <div className="grid grid-cols-2 gap-3">
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => {
-                    setSelectedCategory(e.target.value);
-                    setLearningSkill('');
-                  }}
-                  className="input-field text-sm"
-                >
-                  <option value="">All Categories</option>
-                  {categories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>{cat.name}</option>
-                  ))}
-                </select>
-                <select
-                  value={learningSkill}
-                  onChange={(e) => setLearningSkill(e.target.value)}
-                  className="input-field text-sm"
-                >
-                  <option value="">Pick a skill...</option>
-                  {filteredSkills.map((skill) => (
-                    <option key={skill.id} value={skill.id}>{skill.name}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          )}
+          <div>
+            <label className="label">I want to</label>
+            <select
+              value={skillType}
+              onChange={(e) => setSkillType(e.target.value as 'HAVE' | 'WANT')}
+              className="input-field"
+            >
+              <option value="WANT">Learn</option>
+              <option value="HAVE">Teach</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="label">Skill</label>
+            <select
+              value={selectedSkill}
+              onChange={(e) => setSelectedSkill(e.target.value)}
+              className="input-field"
+            >
+              <option value="">Select a skill...</option>
+              {skills.map((skill) => (
+                <option key={skill.id} value={skill.id}>
+                  {skill.name} ({skill.category})
+                </option>
+              ))}
+            </select>
+          </div>
 
           <button
             type="submit"

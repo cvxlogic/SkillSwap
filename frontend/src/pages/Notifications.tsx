@@ -1,10 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Bell, Check, CheckCheck } from 'lucide-react';
-import Layout from '../components/Layout';
-import { notificationsApi } from '../services/api';
-import toast from 'react-hot-toast';
-import { Notification } from '../types';
+import { notificationApi } from '../services/api';
+import type { Notification } from '../types';
 
 export default function Notifications() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -16,10 +13,10 @@ export default function Notifications() {
 
   const fetchNotifications = async () => {
     try {
-      const res = await notificationsApi.getAll();
-      setNotifications(res.data.data);
+      const response = await notificationApi.getAll();
+      setNotifications(response.data.data.notifications || []);
     } catch (error) {
-      toast.error('Failed to load notifications');
+      console.error('Failed to load notifications:', error);
     } finally {
       setLoading(false);
     }
@@ -27,102 +24,80 @@ export default function Notifications() {
 
   const handleMarkAsRead = async (id: string) => {
     try {
-      await notificationsApi.markAsRead(id);
-      setNotifications(notifications.map(n =>
-        n.notification_id === id ? { ...n, is_read: true } : n
-      ));
+      await notificationApi.markAsRead(id);
+      setNotifications(notifications.map(n => n.id === id ? { ...n, read: true } : n));
     } catch (error) {
-      toast.error('Failed to mark as read');
+      console.error('Failed to mark as read:', error);
     }
   };
 
   const handleMarkAllAsRead = async () => {
     try {
-      await notificationsApi.markAllAsRead();
-      setNotifications(notifications.map(n => ({ ...n, is_read: true })));
-      toast.success('All notifications marked as read');
+      await notificationApi.markAllAsRead();
+      setNotifications(notifications.map(n => ({ ...n, read: true })));
     } catch (error) {
-      toast.error('Failed to mark all as read');
+      console.error('Failed to mark all as read:', error);
     }
   };
 
-  const unreadCount = notifications.filter(n => !n.is_read).length;
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
-    <Layout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-normal flex items-center gap-3 mb-2" style={{ letterSpacing: '-0.02em' }}>
-              <Bell style={{ color: '#3ecf8e' }} />
-              Notifications
-            </h1>
-            <p style={{ color: '#898989' }}>
-              {unreadCount > 0 ? `${unreadCount} unread` : 'All caught up!'}
-            </p>
-          </div>
+    <div className="min-h-screen p-6">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="max-w-4xl mx-auto"
+      >
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl font-normal gradient-text">
+            Notifications
+            {unreadCount > 0 && (
+              <span className="ml-3 text-lg text-white/50">({unreadCount})</span>
+            )}
+          </h1>
           {unreadCount > 0 && (
-            <button
-              onClick={handleMarkAllAsRead}
-              className="pill-btn pill-btn-secondary flex items-center gap-2"
-            >
-              <CheckCheck size={18} />
+            <button onClick={handleMarkAllAsRead} className="pill-btn-secondary">
               Mark all as read
             </button>
           )}
         </div>
 
         {loading ? (
-          <div className="flex items-center justify-center h-64">
-            <div className="w-8 h-8 border-2 rounded-full animate-spin" style={{ borderColor: '#3ecf8e', borderTopColor: 'transparent' }} />
+          <div className="flex items-center justify-center p-12">
+            <div className="w-8 h-8 border-2 rounded-full animate-spin border-[#3ecf8e] border-t-transparent" />
           </div>
-        ) : notifications.length > 0 ? (
-          <div className="space-y-3">
-            {notifications.map((notif, index) => (
-              <motion.div
-                key={notif.notification_id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.03 }}
-                className="card flex items-start gap-4"
-                style={
-                  !notif.is_read 
-                    ? { background: 'rgba(62, 207, 142, 0.05)', borderColor: 'rgba(62, 207, 142, 0.3)' }
-                    : {}
-                }
-              >
-                <div className="p-2 rounded-full" style={!notif.is_read ? { background: 'rgba(62, 207, 142, 0.15)' } : { background: '#0f0f0f' }}>
-                  <Bell size={18} style={!notif.is_read ? { color: '#3ecf8e' } : { color: '#898989' }} />
-                </div>
-                
-                <div className="flex-1 min-w-0">
-                  <p className={!notif.is_read ? 'font-medium' : ''}>{notif.message}</p>
-                  <p className="text-sm mt-1" style={{ color: '#898989' }}>
-                    {new Date(notif.created_at).toLocaleString()}
-                  </p>
-                </div>
-
-                {!notif.is_read && (
-                  <button
-                    onClick={() => handleMarkAsRead(notif.notification_id)}
-                    className="p-2 rounded-lg transition-colors"
-                    title="Mark as read"
-                    style={{ color: '#898989' }}
-                  >
-                    <Check size={18} />
-                  </button>
-                )}
-              </motion.div>
-            ))}
+        ) : notifications.length === 0 ? (
+          <div className="empty-state glass-card">
+            <p>No notifications</p>
           </div>
         ) : (
-          <div className="card text-center py-16">
-            <Bell size={48} className="mx-auto mb-4" style={{ color: '#4d4d4d' }} />
-            <h3 className="text-xl font-normal mb-2">No notifications</h3>
-            <p style={{ color: '#898989' }}>You're all caught up!</p>
+          <div className="space-y-3">
+            {notifications.map((n) => (
+              <div
+                key={n.id}
+                onClick={() => !n.read && handleMarkAsRead(n.id)}
+                className={`glass-card p-5 rounded-xl cursor-pointer transition-all ${
+                  !n.read ? 'border-l-4 border-l-[#3ecf8e]' : ''
+                }`}
+                style={{
+                  background: !n.read ? 'rgba(62, 207, 142, 0.05)' : undefined,
+                }}
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-medium">{n.title}</h3>
+                    <p className="text-sm text-white/70">{n.body}</p>
+                  </div>
+                  <span className="text-xs text-white/40">
+                    {new Date(n.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
+            ))}
           </div>
         )}
-      </div>
-    </Layout>
+      </motion.div>
+    </div>
   );
 }
