@@ -255,4 +255,4 @@ MCA Sem-II Project - Educational Purpose
 
 ## Author
 
-**Vishal Singh** , **Chirag Varshney** and **Aryan Joshi** | MCA Sem-II | Full-Stack Application with Database Integration
+**Vishal Singh** | 590028039 , **Chirag Varshney** | 590024860 and **Aryan Joshi** | 590028005 | MCA Sem-II | Full-Stack Application with Database Integration
