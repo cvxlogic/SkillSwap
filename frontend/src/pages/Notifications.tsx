@@ -84,7 +84,7 @@ export default function Notifications() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.03 }}
-                className="card flex items-start gap-4"
+                className="card p-5 flex items-start gap-4"
                 style={
                   !notif.is_read 
                     ? { background: 'rgba(62, 207, 142, 0.05)', borderColor: 'rgba(62, 207, 142, 0.3)' }
@@ -116,7 +116,7 @@ export default function Notifications() {
             ))}
           </div>
         ) : (
-          <div className="card text-center py-16">
+          <div className="card p-5 text-center py-16">
             <Bell size={48} className="mx-auto mb-4" style={{ color: '#4d4d4d' }} />
             <h3 className="text-xl font-normal mb-2">No notifications</h3>
             <p style={{ color: '#898989' }}>You're all caught up!</p>

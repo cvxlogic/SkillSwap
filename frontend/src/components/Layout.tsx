@@ -3,9 +3,10 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Home, BookOpen, Users, Calendar, Trophy, Bell, LogOut, Menu, X, 
-  Send, Star, User, ChevronLeft
+  Send, Star, User
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import Avatar from './Avatar';
 
 interface LayoutProps {
   children: ReactNode;
@@ -40,7 +41,7 @@ export default function Layout({ children }: LayoutProps) {
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate('/');
   };
 
   return (
@@ -79,10 +80,11 @@ export default function Layout({ children }: LayoutProps) {
       >
         <div className="flex items-center justify-between p-5" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
           <Link to="/dashboard" className="flex items-center gap-3" onClick={() => setMobileOpen(false)}>
-            <div className="w-11 h-11 rounded-xl flex items-center justify-center relative overflow-hidden flex-shrink-0" style={{ background: 'linear-gradient(135deg, #3ecf8e 0%, #2eb878 100%)', boxShadow: '0 4px 24px rgba(62, 207, 142, 0.4)' }}>
-              <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-transparent" />
-              <span className="text-black font-bold text-sm relative z-10">SS</span>
-            </div>
+            <img 
+              src="/logo.jpeg" 
+              alt="SkillSwap" 
+              className="w-11 h-11 rounded-xl object-cover flex-shrink-0"
+            />
             <span className="font-sans font-bold text-xl gradient-text">
               SkillSwap
             </span>
@@ -136,11 +138,9 @@ export default function Layout({ children }: LayoutProps) {
         </div>
 
         <div className="p-4" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-          <div className="glass-card p-3 mb-3">
+          <div className="glass-card p-5 mb-3">
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl flex items-center justify-center text-sm font-medium flex-shrink-0" style={{ background: 'linear-gradient(135deg, #7840ff 0%, #5a2db8 100%)', color: 'white', boxShadow: '0 4px 20px rgba(120, 64, 255, 0.3)' }}>
-                {user?.full_name.split(' ').map(n => n[0]).join('')}
-              </div>
+              <Avatar user={user!} size="md" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{user?.full_name}</p>
                 <p className="text-xs capitalize" style={{ color: '#898989' }}>{user?.role}</p>
@@ -176,16 +176,10 @@ export default function Layout({ children }: LayoutProps) {
               <span className="absolute top-1 right-1 w-2 h-2 rounded-full" style={{ background: '#3ecf8e' }} />
             </Link>
             
-            <Link
-              to="/profile"
-              className="flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-300 hover:scale-105"
-              style={{ background: 'rgba(255,255,255,0.05)' }}
-            >
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-medium" style={{ background: 'linear-gradient(135deg, #7840ff 0%, #5a2db8 100%)', color: 'white' }}>
-                {user?.full_name.split(' ').map(n => n[0]).join('')}
-              </div>
+            <div className="flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-300 hover:scale-105">
+              <Avatar user={user!} size="sm" />
               <span className="text-sm font-medium hidden sm:block">{user?.full_name?.split(' ')[0]}</span>
-            </Link>
+            </div>
           </div>
         </nav>
 

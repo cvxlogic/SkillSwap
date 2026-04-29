@@ -11,7 +11,7 @@ export default function StatCard({ title, value, icon, variant = 'default' }: St
   return (
     <motion.div
       whileHover={{ scale: 1.02, borderColor: 'rgba(62, 207, 142, 0.5)' }}
-      className="glass-card"
+        className="glass-card p-5"
     >
       <div className="flex items-start justify-between">
         <div>

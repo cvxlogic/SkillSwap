@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react';
-import { User, Mail, Briefcase, Calendar, Star, BookOpen, Clock, Edit, Save, Camera } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { User, Mail, Briefcase, Calendar, Star, BookOpen, Clock, Edit, Save, Camera, ArrowLeft } from 'lucide-react';
 import { format } from 'date-fns';
 import { motion } from 'framer-motion';
 import Layout from '../components/Layout';
+import Avatar from '../components/Avatar';
 import { useAuth } from '../context/AuthContext';
 import { authApi, sessionsApi, skillsApi } from '../services/api';
 import toast from 'react-hot-toast';
 import { UserSkill } from '../types';
 
 export default function Profile() {
-  const { user, setUser } = useAuth();
+  const { user, updateUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState(false);
   const [stats, setStats] = useState<any>(null);
@@ -41,7 +43,7 @@ export default function Profile() {
     try {
       setLoading(true);
       const res = await authApi.updateProfile(formData);
-      setUser(res.data.data);
+      updateUser(res.data.data);
       toast.success('Profile updated!');
       setEditing(false);
     } catch (error: any) {
@@ -54,22 +56,27 @@ export default function Profile() {
   return (
     <Layout>
       <div className="max-w-4xl mx-auto space-y-6">
+        <Link to="/dashboard" className="inline-flex items-center gap-2 text-zinc-400 hover:text-white mb-4 transition-colors">
+          <ArrowLeft size={18} />
+          <span className="text-sm">Back to Dashboard</span>
+        </Link>
         <div className="relative">
           <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full" style={{ 
             background: 'radial-gradient(circle, rgba(120, 64, 255, 0.15) 0%, transparent 70%)',
             filter: 'blur(40px)'
           }} />
           
-          <div className="elevated-card p-8">
+          <div className="elevated-card p-5">
             <div className="flex flex-col md:flex-row items-center gap-6">
               <div className="relative">
-                <div className="w-28 h-28 rounded-2xl flex items-center justify-center text-3xl font-medium" style={{ 
-                  background: 'linear-gradient(135deg, #3ecf8e 0%, #2eb878 100%)', 
-                  color: '#0a0a0f',
-                  boxShadow: '0 8px 40px rgba(62, 207, 142, 0.4)'
+                <Avatar user={user!} size="xl" />
+                <button className="absolute -bottom-2 -right-2 p-2 rounded-xl" style={{ 
+                  background: 'linear-gradient(135deg, #7840ff 0%, #5a2db8 100%)',
+                  color: 'white',
+                  boxShadow: '0 4px 20px rgba(120, 64, 255, 0.4)'
                 }}>
-                  {user?.full_name.split(' ').map(n => n[0]).join('')}
-                </div>
+                  <Camera size={16} />
+                </button>
                 <button className="absolute -bottom-2 -right-2 p-2 rounded-xl" style={{ 
                   background: 'linear-gradient(135deg, #7840ff 0%, #5a2db8 100%)',
                   color: 'white',
@@ -204,10 +211,10 @@ export default function Profile() {
           </motion.div>
         </div>
 
-        <div className="elevated-card p-6">
-          <h2 className="text-xl font-normal mb-4 flex items-center gap-2">
-            <BookOpen size={20} style={{ color: '#3ecf8e' }} />
-            My Skills
+         <div className="elevated-card p-5">
+           <h2 className="text-xl font-normal mb-4 flex items-center gap-2">
+             <BookOpen size={20} style={{ color: '#3ecf8e' }} />
+             My Skills
           </h2>
           
           {userSkills.length > 0 ? (
@@ -215,8 +222,8 @@ export default function Profile() {
               {userSkills.map((us) => (
                 <div 
                   key={us.id}
-                  className="p-4 rounded-xl flex items-center justify-between"
-                  style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}
+                   className="p-5 rounded-xl flex items-center justify-between"
+                   style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}
                 >
                   <div>
                     <p className="font-medium">{us.skill.name}</p>
@@ -242,10 +249,10 @@ export default function Profile() {
           )}
         </div>
 
-        <div className="elevated-card p-6">
-          <h2 className="text-xl font-normal mb-4 flex items-center gap-2">
-            <Mail size={20} style={{ color: '#7840ff' }} />
-            Account Info
+         <div className="elevated-card p-5">
+           <h2 className="text-xl font-normal mb-4 flex items-center gap-2">
+             <Mail size={20} style={{ color: '#7840ff' }} />
+             Account Info
           </h2>
           
           <div className="space-y-4">

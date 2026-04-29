@@ -15,7 +15,11 @@ A peer-to-peer skill-sharing platform for universities where students and facult
 - **Review System** - Rate mentors after sessions, auto-calculated average ratings
 - **Leaderboard** - MongoDB aggregation pipeline showing top mentors
 - **Notifications** - Real-time notifications for session updates
+- **Avatar Support** - User profile pictures with gradient fallback to initials
+- **Back Navigation** - Back buttons on all major pages
+- **Hero Video** - Background video in landing page hero section
 - **Responsive Design** - Dark mode UI with smooth animations
+- **Consistent Padding** - Standardized p-5 (20px) padding across all cards
 
 ---
 
@@ -26,10 +30,12 @@ A peer-to-peer skill-sharing platform for universities where students and facult
 | Frontend   | React 18 + Vite + TypeScript |
 | Styling    | Tailwind CSS                 |
 | Animation  | Framer Motion                |
+| UI Components | Avatar, BackButton, Modal    |
 | Backend    | Node.js + Express.js         |
-| Database   | MongoDB 8.0 + Prisma ORM     |
+| Database   | MongoDB 6.0 + Prisma ORM     |
 | Auth       | JWT + bcrypt                 |
 | Validation | Zod                          |
+| Hosting    | Vercel (Frontend) + Render (Backend) |
 
 ---
 
@@ -103,6 +109,25 @@ npm run dev
 
 Frontend runs on **http://localhost:3000** (or next available port)
 
+### 4. Frontend Production (Vercel)
+
+```bash
+# Install Vercel CLI
+npm i -g vercel
+
+# Login to Vercel
+vercel login
+
+# Deploy to production
+cd frontend
+vercel --prod
+
+# Set environment variable in Vercel dashboard:
+# VITE_API_URL=https://skillswap-grvi.onrender.com/api
+```
+
+Frontend deployed on **Vercel**: `https://skillswap.vercel.app`
+
 ---
 
 ## Environment Variables
@@ -118,7 +143,11 @@ PORT=5001
 ### Frontend (.env)
 
 ```env
+# Local development
 VITE_API_URL=http://localhost:5001/api
+
+# Production (Vercel)
+VITE_API_URL=https://skillswap-grvi.onrender.com/api
 ```
 
 ---
@@ -126,7 +155,7 @@ VITE_API_URL=http://localhost:5001/api
 ## Test Accounts
 
 | Role    | Email                       | Password    |
-| ------- | --------------------------- | ----------- |
+| -------- | --------------------------- | ----------- |
 | Faculty | priya.sharma@university.edu | password123 |
 | Student | aarav.gupta@student.edu     | password123 |
 
@@ -213,9 +242,37 @@ SkillSwap/
 │   └── package.json
 │
 ├── frontend/
+│   ├── public/
+│   │   ├── images/
+│   │   ├── video/
+│   │   │   └── hero.mp4
+│   │   ├── logo.jpeg
+│   │   └── logo_text.jpeg
 │   ├── src/
 │   │   ├── components/
+│   │   │   ├── Avatar.tsx
+│   │   │   ├── Layout.tsx
+│   │   │   ├── Sidebar.tsx
+│   │   │   ├── Modal.tsx
+│   │   │   ├── Navbar.tsx
+│   │   │   ├── MentorCard.tsx
+│   │   │   ├── SessionCard.tsx
+│   │   │   ├── StatCard.tsx
+│   │   │   └── Skeleton.tsx
 │   │   ├── pages/
+│   │   │   ├── Home.tsx
+│   │   │   ├── Dashboard.tsx
+│   │   │   ├── Login.tsx
+│   │   │   ├── Register.tsx
+│   │   │   ├── Profile.tsx
+│   │   │   ├── MySkills.tsx
+│   │   │   ├── BrowseMentors.tsx
+│   │   │   ├── Sessions.tsx
+│   │   │   ├── Requests.tsx
+│   │   │   ├── Favorites.tsx
+│   │   │   ├── Notifications.tsx
+│   │   │   ├── Leaderboard.tsx
+│   │   │   └── BookSession.tsx
 │   │   ├── context/
 │   │   ├── services/
 │   │   ├── types/
@@ -243,6 +300,19 @@ npm start       # Start production server
 ```bash
 npm run dev     # Start Vite dev server
 npm run build   # Build for production
+npm run preview # Preview production build
+```
+
+### Deployment
+
+```bash
+# Frontend on Vercel
+cd frontend
+vercel login
+vercel --prod   # Deploy to production
+
+# Set environment variable in Vercel dashboard:
+# VITE_API_URL=https://skillswap-grvi.onrender.com/api
 ```
 
 ---
@@ -255,4 +325,15 @@ MCA Sem-II Project - Educational Purpose
 
 ## Author
 
-**Vishal Singh** | 590028039 , **Chirag Varshney** | 590024860 and **Aryan Joshi** | 590028005 | MCA Sem-II | Full-Stack Application with Database Integration
+**Vishal Singh** | 590028039 , **Chirag Varshney** | 590024860 and **Ayran Joshi** | 590028005 | MCA Sem-II | Full-Stack Application with Database Integration
+
+---
+
+## Recent Updates
+
+- ✅ **Avatar Component** - Added reusable Avatar with image support and gradient fallback
+- ✅ **Back Buttons** - Added to Sessions, Profile, MySkills, Requests, BrowseMentors
+- ✅ **Hero Video** - Background video in landing page (public/video/hero.mp4)
+- ✅ **Padding Standardization** - All cards now use consistent p-5 (20px)
+- ✅ **Frontend Hosting** - Now deployed on Vercel (frontend) + Render (backend)
+- ✅ **Reference Images** - Added Unsplash images to Home, Dashboard, BrowseMentors pages

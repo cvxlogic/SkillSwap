@@ -86,9 +86,11 @@ export default function Register() {
       >
         <div className="glass-card p-10 rounded-3xl">
           <div className="text-center mb-8">
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-5" style={{ background: 'linear-gradient(135deg, #3ecf8e 0%, #2eb878 100%)' }}>
-              <span className="text-black font-bold text-xl">SS</span>
-            </div>
+            <img 
+              src="/logo.jpeg" 
+              alt="SkillSwap" 
+              className="w-14 h-14 rounded-2xl mx-auto mb-5 object-cover"
+            />
             <h1 className="text-4xl font-normal mb-3 gradient-text" style={{ letterSpacing: '-0.02em' }}>Join SkillSwap</h1>
             <p className="text-lg" style={{ color: 'rgba(255,255,255,0.5)' }}>Create your account and start learning</p>
           </div>

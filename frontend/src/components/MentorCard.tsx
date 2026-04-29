@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Star, MapPin, BookOpen } from 'lucide-react';
 import { User, UserSkill } from '../types';
+import Avatar from './Avatar';
 import toast from 'react-hot-toast';
 
 interface MentorCardProps {
@@ -48,13 +49,7 @@ export default function MentorCard({ mentor, onSelect, showSkills = true, showFa
       )}
       
       <div className="flex items-start gap-4">
-        <div className="w-14 h-14 rounded-xl flex items-center justify-center text-xl font-medium" style={{ 
-          background: 'linear-gradient(135deg, #3ecf8e 0%, #2eb878 100%)', 
-          color: '#0a0a0f',
-          boxShadow: '0 4px 20px rgba(62, 207, 142, 0.3)'
-        }}>
-          {mentor.full_name.split(' ').map(n => n[0]).join('')}
-        </div>
+        <Avatar user={mentor} size="lg" />
         
         <div className="flex-1 min-w-0">
           <h3 className="font-normal text-lg" style={{ letterSpacing: '-0.02em' }}>{mentor.full_name}</h3>

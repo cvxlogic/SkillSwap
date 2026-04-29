@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Star, Search, Trash2, Calendar } from 'lucide-react';
+import { Star, Trash2 } from 'lucide-react';
 import Layout from '../components/Layout';
 import MentorCard from '../components/MentorCard';
-import { useAuth } from '../context/AuthContext';
 import { skillsApi } from '../services/api';
 import toast from 'react-hot-toast';
 import { User, UserSkill } from '../types';
@@ -12,7 +11,6 @@ interface FavoriteMentor extends User {
 }
 
 export default function Favorites() {
-  const { user } = useAuth();
   const [favorites, setFavorites] = useState<FavoriteMentor[]>([]);
   const [loading, setLoading] = useState(true);
 

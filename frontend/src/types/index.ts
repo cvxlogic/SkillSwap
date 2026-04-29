@@ -7,6 +7,7 @@ export interface User {
   role: 'student' | 'faculty';
   department: string | null;
   avg_rating: number | null;
+  avatar_url: string | null;
   created_at: string;
 }
 

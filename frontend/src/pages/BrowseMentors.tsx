@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { Search, Users } from 'lucide-react';
 import Layout from '../components/Layout';
 import MentorCard from '../components/MentorCard';
+import Avatar from '../components/Avatar';
 import Modal from '../components/Modal';
 import { skillsApi } from '../services/api';
 import toast from 'react-hot-toast';
@@ -67,9 +69,23 @@ export default function BrowseMentors() {
   return (
     <Layout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-4xl font-normal mb-2 gradient-text" style={{ letterSpacing: '-0.02em' }}>Browse Mentors</h1>
-          <p style={{ color: 'rgba(255,255,255,0.5)' }}>Find experts to learn from.</p>
+        <div className="grid md:grid-cols-2 gap-8 items-center">
+          <div>
+            <h1 className="text-4xl font-normal mb-2 gradient-text" style={{ letterSpacing: '-0.02em' }}>Browse Mentors</h1>
+            <p style={{ color: 'rgba(255,255,255,0.5)' }}>Find experts to learn from.</p>
+          </div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6 }}
+            className="hidden md:block"
+          >
+            <img 
+              src="public/images/m.jpg" 
+              alt="Mentorship"
+              className="rounded-2xl shadow-2xl w-[700px] h-[180px] object-cover opacity-50"
+            />
+          </motion.div>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4">
@@ -131,7 +147,7 @@ export default function BrowseMentors() {
             ))}
           </div>
         ) : (
-          <div className="glass-card text-center py-16">
+          <div className="glass-card p-5 text-center py-16">
             <Users size={48} className="mx-auto mb-4" style={{ color: 'rgba(255,255,255,0.2)' }} />
             <h3 className="text-xl font-normal mb-2">No mentors found</h3>
             <p style={{ color: 'rgba(255,255,255,0.5)' }}>Try adjusting your search filters.</p>
@@ -147,9 +163,7 @@ export default function BrowseMentors() {
         {selectedMentor && (
           <div className="space-y-4">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full flex items-center justify-center text-xl font-medium" style={{ background: '#3ecf8e', color: '#0f0f0f' }}>
-                {selectedMentor.full_name.split(' ').map(n => n[0]).join('')}
-              </div>
+              <Avatar user={selectedMentor} size="lg" />
               <div>
                 <p style={{ color: '#898989' }}>{selectedMentor.department}</p>
                 {selectedMentor.avg_rating && (

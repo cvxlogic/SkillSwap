@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Trophy, Star, Calendar } from 'lucide-react';
 import Layout from '../components/Layout';
+import Avatar from '../components/Avatar';
 import { reviewsApi } from '../services/api';
 import toast from 'react-hot-toast';
 import { TopMentor } from '../types';
@@ -55,7 +56,7 @@ export default function Leaderboard() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className="glass-card"
+                className="glass-card p-5"
                 style={index < 3 ? { 
                   borderColor: 'rgba(62, 207, 142, 0.3)',
                   boxShadow: index === 0 ? '0 0 40px rgba(62, 207, 142, 0.1)' : undefined
@@ -66,9 +67,7 @@ export default function Leaderboard() {
                     {getRankIcon(index)}
                   </div>
                   
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-medium" style={{ background: '#3ecf8e', color: '#0f0f0f' }}>
-                    {mentor.full_name.split(' ').map(n => n[0]).join('')}
-                  </div>
+                  <Avatar user={mentor} size="md" />
 
                   <div className="flex-1 min-w-0">
                     <h3 className="font-normal text-lg" style={{ letterSpacing: '-0.02em' }}>{mentor.full_name}</h3>
@@ -106,7 +105,7 @@ export default function Leaderboard() {
             ))}
           </div>
         ) : (
-          <div className="card text-center py-16">
+          <div className="card p-5 text-center py-16">
             <Trophy size={48} className="mx-auto mb-4" style={{ color: '#4d4d4d' }} />
             <h3 className="text-xl font-normal mb-2">No mentors yet</h3>
             <p style={{ color: '#898989' }}>The leaderboard will appear once mentors have sessions.</p>

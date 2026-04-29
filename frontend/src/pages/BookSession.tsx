@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, Calendar, Clock, BookOpen, User, Star } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, BookOpen } from 'lucide-react';
 import Layout from '../components/Layout';
 import Modal from '../components/Modal';
 import { skillsApi, sessionsApi } from '../services/api';

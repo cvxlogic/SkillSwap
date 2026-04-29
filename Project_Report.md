@@ -52,33 +52,41 @@ SkillSwap is a web-based platform that enables:
 │ role            │                                           │
 │ department      │       ┌─────────────────┐                   │
 │ avg_rating      │       │   USER_SKILL    │───────────────────┘
-│ created_at      │       ├─────────────────┤
-└─────────────────┘       │ _id (PK)        │
-        │                │ userId (FK)     │───────────────┐
-        │                │ skillId (FK)    │               │
+│ bio             │       ├─────────────────┤
+│ avatar_url      │       │ _id (PK)        │
+│ created_at      │       │ userId (FK)     │───────────────┐
+└─────────────────┘       │ skillId (FK)    │               │
         │                │ proficiency_level│               │
         │                │ years_of_exp    │               │
-        └────────────────┴─────────────────┘               │
-                           │                              │
-        ┌──────────────────┼──────────────────┐          │
-        │                  │                  │          │
-        ▼                  ▼                  ▼          │
-┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
-│  SKILL_SESSION  │ │SESSION_REVIEW   │ │  NOTIFICATION    │
-├─────────────────┤ ├─────────────────┤ ├─────────────────┤
-│ _id (PK)        │ │ _id (PK)        │ │ _id (PK)        │
-│ mentorId (FK)───┼─│ sessionId (FK)  │ │ userId (FK)─────┼──┐
-│ menteeId (FK)   │ │ reviewerId (FK) │ │ message         │  │
-│ skillId (FK)    │ │ rating (1-5)    │ │ is_read         │  │
-│ title           │ │ comment         │ │ created_at      │  │
-│ description     │ │ created_at      │ └─────────────────┘  │
-│ scheduled_date  │ └─────────────────┘                      │
-│ status          │                                        │
-│ created_at      │                                        │
-└─────────────────┘                                        │
-                                                         │
-                                                         │
-                                                         └──────┘
+        │                └─────────────────┘               │
+        │                                                  │
+        ├──────────────────┬──────────────────┬────────────┤
+        ▼                  ▼                  ▼            ▼
+┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
+│  SKILL_SESSION  │ │SESSION_REVIEW   │ │  NOTIFICATION    │ │ LEARNING_GOAL    │
+├─────────────────┤ ├─────────────────┤ ├─────────────────┤ ├─────────────────┤
+│ _id (PK)        │ │ _id (PK)        │ │ _id (PK)        │ │ _id (PK)        │
+│ mentorId (FK)───┼─│ sessionId (FK)  │ │ userId (FK)─────┼─┐ │ userId (FK)─────┼─┐
+│ menteeId (FK)   │ │ reviewerId (FK) │ │ message         │ │ │ skillId (FK)    │ │
+│ skillId (FK)    │ │ rating (1-5)    │ │ is_read         │ │ │ description     │ │
+│ title           │ │ comment         │ │ created_at      │ │ │ status          │ │
+│ description     │ │ created_at      │ └─────────────────┘ │ │ priority        │ │
+│ scheduled_date  │ └─────────────────┘                     │ │ created_at      │ │
+│ status          │                                       │ └─────────────────┘ │
+│ created_at      │                                       │                     │
+└─────────────────┘                                       │                     │
+                                                          │                     │
+┌─────────────────┐                                       │                     │
+│ MENTOR_REQUEST  │                                       │                     │
+├─────────────────┤                                       │                     │
+│ _id (PK)        │                                       │                     │
+│ requesterId(FK)─┼───────────────────────────────────────┘                     │
+│ receiverId(FK)──┼─────────────────────────────────────────────────────────────┘
+│ skillId (FK)    │
+│ message         │
+│ status          │
+│ created_at      │
+└─────────────────┘
 ```
 
 ### 2.2 Relationships
@@ -94,6 +102,11 @@ SkillSwap is a web-based platform that enables:
 | SkillSession → SessionReview    | 1:1  | A session has at most one review            |
 | User → SessionReview            | 1:N  | A reviewer can write many reviews           |
 | User → Notification             | 1:N  | A user can have many notifications          |
+| User → LearningGoal             | 1:N  | A user can have many learning goals         |
+| Skill → LearningGoal            | 1:N  | A skill can be a learning goal for many     |
+| User → MentorRequest (as Requester) | 1:N | A user can send many mentor requests      |
+| User → MentorRequest (as Receiver) | 1:N | A user can receive many mentor requests    |
+| Skill → MentorRequest           | 1:N  | A skill can be requested by many users      |
 
 ### 2.3 Collection Schemas
 
@@ -108,6 +121,8 @@ SkillSwap is a web-based platform that enables:
 │ password_hash    : String (bcrypt hashed)                        │
 │ role             : String ('student' | 'faculty')               │
 │ department       : String (nullable)                            │
+│ bio              : String (nullable)                             │
+│ avatar_url       : String (nullable)                             │
 │ avg_rating       : Number (default: 0)                          │
 │ created_at       : DateTime (default: now())                     │
 └─────────────────────────────────────────────────────────────────┘
@@ -173,6 +188,30 @@ SkillSwap is a web-based platform that enables:
 │ userId           : ObjectId (Foreign Key → User)                │
 │ message          : String                                        │
 │ is_read          : Boolean (default: false)                     │
+│ created_at       : DateTime (default: now())                     │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ LEARNING_GOAL Collection                                          │
+├─────────────────────────────────────────────────────────────────┤
+│ _id              : ObjectId (Primary Key)                        │
+│ userId           : ObjectId (Foreign Key → User)                │
+│ skillId          : ObjectId (Foreign Key → Skill)               │
+│ description      : String (nullable)                             │
+│ status           : String ('wanted'|'learning'|'completed')     │
+│ priority         : String ('low'|'medium'|'high')               │
+│ created_at       : DateTime (default: now())                     │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ MENTOR_REQUEST Collection                                         │
+├─────────────────────────────────────────────────────────────────┤
+│ _id              : ObjectId (Primary Key)                        │
+│ requesterId      : ObjectId (Foreign Key → User)                │
+│ receiverId       : ObjectId (Foreign Key → User)                │
+│ skillId          : ObjectId (Foreign Key → Skill)               │
+│ message          : String (nullable)                             │
+│ status           : String ('pending'|'accepted'|'rejected')     │
 │ created_at       : DateTime (default: now())                     │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -322,7 +361,7 @@ async function createReview(sessionId, reviewerId, rating) {
 SkillSwap/
 ├── backend/
 │   ├── prisma/
-│   │   ├── schema.prisma      # MongoDB Schema (7 collections)
+│   │   ├── schema.prisma      # MongoDB Schema (9 collections)
 │   │   └── seed.ts           # Database seeder (20 users, 35+ skills)
 │   ├── src/
 │   │   ├── index.ts          # Express server entry point
@@ -337,18 +376,19 @@ SkillSwap/
 │
 ├── frontend/
 │   ├── src/
-│   │   ├── components/       # Navbar, Cards, Modals, StarRating
-│   │   ├── pages/           # 10 pages (Login, Register, Dashboard, etc.)
+│   │   ├── components/       # Navbar, Sidebar, Cards, Modals, Avatar, StarRating, Skeleton
+│   │   ├── pages/           # 13 pages (Home, Login, Register, Dashboard, Profile, etc.)
 │   │   ├── context/         # AuthContext for authentication state
 │   │   ├── services/        # Axios API client
 │   │   ├── types/           # TypeScript interfaces
-│   │   └── App.tsx          # Main app with routing
+│   │   └── App.tsx          # Main app with routing (13 routes)
 │   ├── .env                 # API URL configuration
 │   └── package.json
 │
 ├── AGENTS.md                # OpenCode instructions
 ├── README.md                # Setup guide
-└── Project_Report.md       # This document
+├── Project_Report.md       # This document
+└── ScreenShot.png          # Application screenshots
 ```
 
 ---
@@ -390,7 +430,11 @@ SkillSwap/
 - Real-time notifications badge
 - Smooth page transitions (Framer Motion)
 - Form validation with error messages
-- Loading states for async operations
+- Loading states with skeleton loaders
+- User profiles with bio and avatar
+- Favorite mentors list
+- Learning goals tracker
+- Mentor request system
 
 ---
 
@@ -445,31 +489,39 @@ Including: Python, JavaScript, React, Node.js, MongoDB, SQL, TensorFlow, AWS, Fi
 
 ## 10. Evaluation Criteria Mapping
 
-| Criterion              | Implementation                           |
-| ---------------------- | ---------------------------------------- |
-| Full-Stack Application | React + Node.js + Express + MongoDB      |
-| Database Schema        | 7 MongoDB collections with relationships |
-| Aggregation Pipeline   | Leaderboard (VIEW equivalent)            |
-| Transaction            | Session booking with conflict check      |
-| Trigger                | Auto-update avg_rating on review         |
-| Authentication         | JWT + bcrypt (secure)                    |
-| Role-based Access      | Student/Faculty with middleware          |
-| Responsive UI          | Tailwind CSS mobile-first                |
-| Animations             | Framer Motion transitions                |
-| TypeScript             | Full type safety frontend & backend      |
+| Criterion              | Implementation                                |
+| ---------------------- | --------------------------------------------- |
+| Full-Stack Application | React + Node.js + Express + MongoDB           |
+| Database Schema        | 9 MongoDB collections with relationships      |
+| Aggregation Pipeline   | Leaderboard (VIEW equivalent)                 |
+| Transaction            | Session booking with conflict check           |
+| Trigger                | Auto-update avg_rating on review              |
+| Authentication         | JWT + bcrypt (secure)                         |
+| Role-based Access      | Student/Faculty with middleware               |
+| Responsive UI          | Tailwind CSS mobile-first                     |
+| Animations             | Framer Motion transitions                     |
+| TypeScript             | Full type safety frontend & backend           |
+| Advanced Features      | Learning goals, Mentor requests, Favorites    |
 
 ---
 
 ## 11. Screenshots Description
 
-### 11.1 Login Page
+### 11.1 Home Page
+
+- Landing page with project overview
+- Quick login/register options
+- Feature highlights
+- Supabase-inspired dark theme
+
+### 11.2 Login Page
 
 - Centered card with logo
 - Email and password fields
 - Supabase-inspired dark theme
 - "Register here" link
 
-### 11.2 Dashboard
+### 11.3 Dashboard
 
 - Welcome header with user name
 - 4 stat cards (Skills, Sessions, Rating, Notifications)
@@ -502,6 +554,26 @@ Including: Python, JavaScript, React, Node.js, MongoDB, SQL, TensorFlow, AWS, Fi
 - Add/Edit/Delete functionality
 - Category-based grouping
 
+### 11.7 Profile Page
+
+- User avatar and bio
+- Personal information display
+- Edit profile functionality
+- Statistics summary
+
+### 11.8 Requests Page
+
+- Incoming mentor request list
+- Accept/Reject request actions
+- Request status indicators
+- Message preview from requester
+
+### 11.9 Favorites Page
+
+- Saved/favorite mentors list
+- Quick access to mentor profiles
+- Direct session booking from list
+
 ---
 
 ## 12. Conclusion
@@ -509,12 +581,16 @@ Including: Python, JavaScript, React, Node.js, MongoDB, SQL, TensorFlow, AWS, Fi
 SkillSwap successfully demonstrates:
 
 - Full-stack MERN development with TypeScript
-- MongoDB document-based database design
+- MongoDB document-based database design (9 collections)
 - Advanced DBMS features (Aggregation, Transactions, Triggers)
 - Secure JWT-based authentication
 - Role-based access control
 - Interactive UI with smooth animations
 - Responsive design for all devices
+- Learning goals tracking system
+- Mentor request management
+- User profiles with bio and avatars
+- Favorites/saved mentors feature
 
 The application is production-ready and can be deployed with proper environment configuration.
 

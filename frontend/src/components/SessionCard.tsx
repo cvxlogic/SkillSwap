@@ -49,7 +49,7 @@ export default function SessionCard({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="elevated-card"
+        className="elevated-card p-5"
     >
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
