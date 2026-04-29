@@ -259,7 +259,7 @@ export default function Home() {
               transition={{ duration: 0.6 }}
             >
               <img
-                src="/public/images/home.jpg"
+                src="/images/home.jpg"
                 alt="Students learning together"
                 className="rounded-2xl shadow-2xl"
               />
