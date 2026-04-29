@@ -37,9 +37,11 @@ export default function Login() {
       >
         <div className="glass-card p-10 rounded-3xl">
           <div className="text-center mb-10">
-            <div className="rounded-2xl flex items-center justify-center mx-auto mb-5 w-12 h-12" style={{ background: 'linear-gradient(135deg, #3ecf8e 0%, #2eb878 100%)' }}>
-              <span className="text-black font-bold text-lg">SS</span>
-            </div>
+            <img 
+              src="/logo.jpeg" 
+              alt="SkillSwap" 
+              className="w-12 h-12 rounded-2xl mx-auto mb-5 object-cover"
+            />
             <h1 className="text-4xl font-normal mb-3 gradient-text" style={{ letterSpacing: '-0.02em' }}>Welcome back</h1>
             <p className="text-lg" style={{ color: 'rgba(255,255,255,0.5)' }}>Sign in to continue</p>
           </div>

@@ -104,7 +104,7 @@ export default function Dashboard() {
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-          <div className="glass-card p-4 col-span-2 sm:col-span-1 lg:col-span-2">
+          <div className="glass-card p-5 col-span-2 sm:col-span-1 lg:col-span-2">
             <div className="flex items-center gap-3">
               <div className="p-3 rounded-xl" style={{ background: 'linear-gradient(135deg, rgba(62, 207, 142, 0.2) 0%, rgba(62, 207, 142, 0.05) 100%)' }}>
                 <BookOpen size={22} style={{ color: '#3ecf8e' }} />
@@ -115,7 +115,7 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
-          <div className="glass-card p-4 col-span-2 sm:col-span-1 lg:col-span-2">
+          <div className="glass-card p-5 col-span-2 sm:col-span-1 lg:col-span-2">
             <div className="flex items-center gap-3">
               <div className="p-3 rounded-xl" style={{ background: 'linear-gradient(135deg, rgba(120, 64, 255, 0.2) 0%, rgba(120, 64, 255, 0.05) 100%)' }}>
                 <Calendar size={22} style={{ color: '#7840ff' }} />
@@ -126,7 +126,7 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
-          <div className="glass-card p-4 col-span-2 sm:col-span-1 lg:col-span-1">
+          <div className="glass-card p-5 col-span-2 sm:col-span-1 lg:col-span-1">
             <div className="flex items-center gap-3">
               <div className="p-3 rounded-xl" style={{ background: 'linear-gradient(135deg, rgba(64, 224, 224, 0.2) 0%, rgba(64, 224, 224, 0.05) 100%)' }}>
                 <Star size={22} style={{ color: '#40e0e0' }} />
@@ -137,7 +137,7 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
-          <div className="glass-card p-4 col-span-2 sm:col-span-1">
+          <div className="glass-card p-5 col-span-2 sm:col-span-1">
             <div className="flex items-center gap-3">
               <div className="p-3 rounded-xl relative" style={{ background: 'linear-gradient(135deg, rgba(255, 64, 96, 0.2) 0%, rgba(255, 64, 96, 0.05) 100%)' }}>
                 <Bell size={22} style={{ color: '#ff4060' }} />
@@ -153,7 +153,7 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
-          <div className="glass-card p-4 col-span-2 sm:col-span-1 lg:col-span-1">
+          <div className="glass-card p-5 col-span-2 sm:col-span-1 lg:col-span-1">
             <div className="flex items-center gap-3">
               <div className="p-3 rounded-xl" style={{ background: 'linear-gradient(135deg, rgba(62, 207, 142, 0.2) 0%, rgba(62, 207, 142, 0.05) 100%)' }}>
                 <Target size={22} style={{ color: '#3ecf8e' }} />
@@ -168,7 +168,7 @@ export default function Dashboard() {
 
         {user?.role === 'student' && learningGoals.length > 0 && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-1 glass-card">
+             <div className="lg:col-span-1 glass-card p-5">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-normal flex items-center gap-2">
                   <Target size={20} style={{ color: '#7840ff' }} />
@@ -181,7 +181,7 @@ export default function Dashboard() {
                   <button
                     key={goal.id}
                     onClick={() => handleGoalSelect(goal.id)}
-                    className="w-full text-left p-4 rounded-xl transition-all duration-300"
+                     className="w-full text-left p-5 rounded-xl transition-all duration-300"
                     style={{ 
                       background: selectedGoal === goal.id 
                         ? getGoalStatusColor(goal.status)
@@ -209,7 +209,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="lg:col-span-2 glass-card">
+             <div className="lg:col-span-2 glass-card p-5">
               <div className="flex items-center gap-2 mb-4">
                 <Sparkles size={20} style={{ color: '#40e0e0' }} />
                 <h2 className="text-lg font-normal">Suggested Mentors</h2>
@@ -234,19 +234,19 @@ export default function Dashboard() {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="glass-card">
-            <h2 className="text-xl font-normal mb-4 flex items-center gap-2">
-              <Bell size={20} style={{ color: '#3ecf8e' }} />
-              Recent Notifications
+           <div className="glass-card p-5">
+             <h2 className="text-xl font-normal mb-4 flex items-center gap-2">
+               <Bell size={20} style={{ color: '#3ecf8e' }} />
+               Recent Notifications
             </h2>
             {notifications.length > 0 ? (
               <div className="space-y-3">
                 {notifications.map((notif) => (
                   <div
                     key={notif.notification_id}
-                    className="p-4 rounded-xl"
-                    style={{ 
-                      background: notif.is_read ? 'rgba(255,255,255,0.03)' : 'linear-gradient(135deg, rgba(62, 207, 142, 0.1) 0%, rgba(62, 207, 142, 0.03) 100%)',
+                     className="p-5 rounded-xl"
+                     style={{ 
+                       background: notif.is_read ? 'rgba(255,255,255,0.03)' : 'linear-gradient(135deg, rgba(62, 207, 142, 0.1) 0%, rgba(62, 207, 142, 0.03) 100%)',
                       border: notif.is_read ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(62, 207, 142, 0.2)'
                     }}
                   >
@@ -262,10 +262,10 @@ export default function Dashboard() {
             )}
           </div>
 
-          <div className="glass-card">
-            <h2 className="text-xl font-normal mb-4 flex items-center gap-2">
-              <TrendingUp size={20} style={{ color: '#40e0e0' }} />
-              Quick Actions
+           <div className="glass-card p-5">
+             <h2 className="text-xl font-normal mb-4 flex items-center gap-2">
+               <TrendingUp size={20} style={{ color: '#40e0e0' }} />
+               Quick Actions
             </h2>
             <div className="grid grid-cols-2 gap-3">
               <Link

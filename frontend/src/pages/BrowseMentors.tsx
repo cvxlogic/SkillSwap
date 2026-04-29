@@ -131,7 +131,7 @@ export default function BrowseMentors() {
             ))}
           </div>
         ) : (
-          <div className="glass-card text-center py-16">
+          <div className="glass-card p-5 text-center py-16">
             <Users size={48} className="mx-auto mb-4" style={{ color: 'rgba(255,255,255,0.2)' }} />
             <h3 className="text-xl font-normal mb-2">No mentors found</h3>
             <p style={{ color: 'rgba(255,255,255,0.5)' }}>Try adjusting your search filters.</p>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Calendar, List, Grid, Clock, Check, X, Star } from 'lucide-react';
+import { Calendar, List, Grid, X } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek } from 'date-fns';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import Layout from '../components/Layout';
 import SessionCard from '../components/SessionCard';
 import Modal from '../components/Modal';
@@ -151,8 +151,8 @@ export default function Sessions() {
         </div>
 
         {viewMode === 'calendar' ? (
-          <div className="elevated-card p-6">
-            <div className="flex items-center justify-between mb-6">
+        <div className="elevated-card p-5">
+             <div className="flex items-center justify-between mb-6">
               <button
                 onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
                 className="p-2 rounded-lg transition-colors hover:bg-white/5"

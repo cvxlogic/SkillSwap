@@ -55,7 +55,7 @@ export default function Leaderboard() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className="glass-card"
+                className="glass-card p-5"
                 style={index < 3 ? { 
                   borderColor: 'rgba(62, 207, 142, 0.3)',
                   boxShadow: index === 0 ? '0 0 40px rgba(62, 207, 142, 0.1)' : undefined
@@ -106,7 +106,7 @@ export default function Leaderboard() {
             ))}
           </div>
         ) : (
-          <div className="card text-center py-16">
+          <div className="card p-5 text-center py-16">
             <Trophy size={48} className="mx-auto mb-4" style={{ color: '#4d4d4d' }} />
             <h3 className="text-xl font-normal mb-2">No mentors yet</h3>
             <p style={{ color: '#898989' }}>The leaderboard will appear once mentors have sessions.</p>

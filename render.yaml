@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: skillswap-backend
+    buildCommand: cd backend && npm install && npx prisma generate && npm run build
+    startCommand: cd backend && npm run start
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: PORT
+        value: 5001
+    region: oregon
+
+  - type: web
+    name: skillswap-frontend
+    buildCommand: cd frontend && npm install && npm run build
+    startCommand: cd frontend && npm run preview
+    envVars:
+      - key: VITE_API_URL
+        value: https://skillswap-backend.onrender.com/api
+    region: oregon

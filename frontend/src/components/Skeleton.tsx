@@ -83,7 +83,7 @@ export function SessionCardSkeleton() {
 
 export function StatCardSkeleton() {
   return (
-    <div className="glass-card p-4">
+    <div className="glass-card p-5">
       <div className="flex items-center gap-3">
         <Skeleton variant="circular" width={48} height={48} />
         <div className="space-y-2">
@@ -97,8 +97,8 @@ export function StatCardSkeleton() {
 
 export function TableSkeleton({ rows = 5, cols = 4 }: { rows?: number; cols?: number }) {
   return (
-    <div className="glass-card overflow-hidden">
-      <div className="p-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
+    <div className="glass-card p-5 overflow-hidden">
+      <div className="border-b" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
         <div className="flex gap-4">
           {Array.from({ length: cols }).map((_, i) => (
             <Skeleton key={i} width={`${100 / cols}%`} height={16} />
@@ -106,7 +106,7 @@ export function TableSkeleton({ rows = 5, cols = 4 }: { rows?: number; cols?: nu
         </div>
       </div>
       {Array.from({ length: rows }).map((_, i) => (
-        <div key={i} className="p-4 border-b flex gap-4" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
+        <div key={i} className="p-5 border-b flex gap-4" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
           {Array.from({ length: cols }).map((_, j) => (
             <Skeleton key={j} width={`${100 / cols}%`} height={14} />
           ))}
@@ -118,7 +118,7 @@ export function TableSkeleton({ rows = 5, cols = 4 }: { rows?: number; cols?: nu
 
 export function NotificationSkeleton() {
   return (
-    <div className="glass-card p-4">
+    <div className="glass-card p-5">
       <div className="flex items-start gap-3">
         <Skeleton variant="circular" width={40} height={40} />
         <div className="flex-1 space-y-2">

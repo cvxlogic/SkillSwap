@@ -9,7 +9,7 @@ import toast from 'react-hot-toast';
 import { UserSkill } from '../types';
 
 export default function Profile() {
-  const { user, setUser } = useAuth();
+  const { user, updateUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState(false);
   const [stats, setStats] = useState<any>(null);
@@ -41,7 +41,7 @@ export default function Profile() {
     try {
       setLoading(true);
       const res = await authApi.updateProfile(formData);
-      setUser(res.data.data);
+      updateUser(res.data.data);
       toast.success('Profile updated!');
       setEditing(false);
     } catch (error: any) {
@@ -60,7 +60,7 @@ export default function Profile() {
             filter: 'blur(40px)'
           }} />
           
-          <div className="elevated-card p-8">
+          <div className="elevated-card p-5">
             <div className="flex flex-col md:flex-row items-center gap-6">
               <div className="relative">
                 <div className="w-28 h-28 rounded-2xl flex items-center justify-center text-3xl font-medium" style={{ 
@@ -204,10 +204,10 @@ export default function Profile() {
           </motion.div>
         </div>
 
-        <div className="elevated-card p-6">
-          <h2 className="text-xl font-normal mb-4 flex items-center gap-2">
-            <BookOpen size={20} style={{ color: '#3ecf8e' }} />
-            My Skills
+         <div className="elevated-card p-5">
+           <h2 className="text-xl font-normal mb-4 flex items-center gap-2">
+             <BookOpen size={20} style={{ color: '#3ecf8e' }} />
+             My Skills
           </h2>
           
           {userSkills.length > 0 ? (
@@ -215,8 +215,8 @@ export default function Profile() {
               {userSkills.map((us) => (
                 <div 
                   key={us.id}
-                  className="p-4 rounded-xl flex items-center justify-between"
-                  style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}
+                   className="p-5 rounded-xl flex items-center justify-between"
+                   style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}
                 >
                   <div>
                     <p className="font-medium">{us.skill.name}</p>
@@ -242,10 +242,10 @@ export default function Profile() {
           )}
         </div>
 
-        <div className="elevated-card p-6">
-          <h2 className="text-xl font-normal mb-4 flex items-center gap-2">
-            <Mail size={20} style={{ color: '#7840ff' }} />
-            Account Info
+         <div className="elevated-card p-5">
+           <h2 className="text-xl font-normal mb-4 flex items-center gap-2">
+             <Mail size={20} style={{ color: '#7840ff' }} />
+             Account Info
           </h2>
           
           <div className="space-y-4">

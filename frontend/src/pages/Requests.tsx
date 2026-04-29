@@ -1,16 +1,14 @@
 import { useEffect, useState } from 'react';
-import { Send, Check, X, Clock, User, BookOpen, Calendar, MessageSquare } from 'lucide-react';
+import { Send, Check, X, Clock, BookOpen, Calendar, MessageSquare } from 'lucide-react';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import Layout from '../components/Layout';
 import Modal from '../components/Modal';
-import { useAuth } from '../context/AuthContext';
 import { sessionsApi } from '../services/api';
 import toast from 'react-hot-toast';
 import { MentorRequest } from '../types';
 
 export default function Requests() {
-  const { user } = useAuth();
   const [requests, setRequests] = useState<MentorRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'pending' | 'accepted' | 'rejected'>('pending');
@@ -225,9 +223,9 @@ export default function Requests() {
       >
         {selectedRequest && (
           <div className="space-y-4">
-            <div className="p-4 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)' }}>
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center text-sm font-medium" style={{ background: '#7840ff', color: 'white' }}>
+            <div className="p-5 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)' }}>
+               <div className="flex items-center gap-3 mb-2">
+                 <div className="w-10 h-10 rounded-lg flex items-center justify-center text-sm font-medium" style={{ background: '#7840ff', color: 'white' }}>
                   {selectedRequest.requester.full_name.split(' ').map(n => n[0]).join('')}
                 </div>
                 <div>

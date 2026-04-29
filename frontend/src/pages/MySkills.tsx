@@ -107,7 +107,7 @@ export default function MySkills() {
                 key={userSkill.id}
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="glass-card"
+                className="glass-card p-5"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-3">
@@ -139,7 +139,7 @@ export default function MySkills() {
             ))}
           </div>
         ) : (
-          <div className="card text-center py-16">
+          <div className="card p-5 text-center py-16">
             <BookOpen size={48} className="mx-auto mb-4" style={{ color: '#4d4d4d' }} />
             <h3 className="text-xl font-normal mb-2">No skills added yet</h3>
             <p style={{ color: '#898989' }}>Add your skills to start teaching others.</p>
