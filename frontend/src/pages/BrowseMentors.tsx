@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Search, Users } from 'lucide-react';
 import Layout from '../components/Layout';
 import MentorCard from '../components/MentorCard';
+import Avatar from '../components/Avatar';
 import Modal from '../components/Modal';
 import { skillsApi } from '../services/api';
 import toast from 'react-hot-toast';
@@ -147,9 +148,7 @@ export default function BrowseMentors() {
         {selectedMentor && (
           <div className="space-y-4">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full flex items-center justify-center text-xl font-medium" style={{ background: '#3ecf8e', color: '#0f0f0f' }}>
-                {selectedMentor.full_name.split(' ').map(n => n[0]).join('')}
-              </div>
+              <Avatar user={selectedMentor} size="lg" />
               <div>
                 <p style={{ color: '#898989' }}>{selectedMentor.department}</p>
                 {selectedMentor.avg_rating && (

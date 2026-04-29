@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Send, Check, X, Clock, BookOpen, Calendar, MessageSquare } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Send, Check, X, Clock, BookOpen, Calendar, MessageSquare, ArrowLeft } from 'lucide-react';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import Layout from '../components/Layout';
 import Modal from '../components/Modal';
+import Avatar from '../components/Avatar';
 import { sessionsApi } from '../services/api';
 import toast from 'react-hot-toast';
 import { MentorRequest } from '../types';
@@ -56,6 +58,10 @@ export default function Requests() {
   return (
     <Layout>
       <div className="space-y-6">
+        <Link to="/dashboard" className="inline-flex items-center gap-2 text-zinc-400 hover:text-white mb-4 transition-colors">
+          <ArrowLeft size={18} />
+          <span className="text-sm">Back to Dashboard</span>
+        </Link>
         <div>
           <h1 className="text-4xl font-normal mb-2 gradient-text" style={{ letterSpacing: '-0.02em' }}>
             Request Management
@@ -123,13 +129,7 @@ export default function Requests() {
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-xl flex items-center justify-center text-lg font-medium" style={{ 
-                        background: 'linear-gradient(135deg, #7840ff 0%, #5a2db8 100%)', 
-                        color: 'white',
-                        boxShadow: '0 4px 20px rgba(120, 64, 255, 0.3)'
-                      }}>
-                        {request.requester.full_name.split(' ').map(n => n[0]).join('')}
-                      </div>
+                      <Avatar user={request.requester} size="md" />
                       <div>
                         <h3 className="font-medium">{request.requester.full_name}</h3>
                         <p className="text-xs" style={{ color: '#555' }}>{request.requester.email}</p>
@@ -224,10 +224,8 @@ export default function Requests() {
         {selectedRequest && (
           <div className="space-y-4">
             <div className="p-5 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)' }}>
-               <div className="flex items-center gap-3 mb-2">
-                 <div className="w-10 h-10 rounded-lg flex items-center justify-center text-sm font-medium" style={{ background: '#7840ff', color: 'white' }}>
-                  {selectedRequest.requester.full_name.split(' ').map(n => n[0]).join('')}
-                </div>
+              <div className="flex items-center gap-3 mb-2">
+                  <Avatar user={selectedRequest.requester} size="sm" />
                 <div>
                   <p className="font-medium">{selectedRequest.requester.full_name}</p>
                   <p className="text-xs" style={{ color: '#555' }}>wants to learn {selectedRequest.skill.name}</p>

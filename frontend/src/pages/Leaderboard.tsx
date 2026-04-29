@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Trophy, Star, Calendar } from 'lucide-react';
 import Layout from '../components/Layout';
+import Avatar from '../components/Avatar';
 import { reviewsApi } from '../services/api';
 import toast from 'react-hot-toast';
 import { TopMentor } from '../types';
@@ -66,9 +67,7 @@ export default function Leaderboard() {
                     {getRankIcon(index)}
                   </div>
                   
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-medium" style={{ background: '#3ecf8e', color: '#0f0f0f' }}>
-                    {mentor.full_name.split(' ').map(n => n[0]).join('')}
-                  </div>
+                  <Avatar user={mentor} size="md" />
 
                   <div className="flex-1 min-w-0">
                     <h3 className="font-normal text-lg" style={{ letterSpacing: '-0.02em' }}>{mentor.full_name}</h3>

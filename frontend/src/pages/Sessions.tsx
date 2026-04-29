@@ -4,8 +4,10 @@ import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSam
 import { AnimatePresence } from 'framer-motion';
 import Layout from '../components/Layout';
 import SessionCard from '../components/SessionCard';
-import Modal from '../components/Modal';
 import StarRating from '../components/StarRating';
+import Modal from '../components/Modal';
+import { Link } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { sessionsApi, reviewsApi } from '../services/api';
 import toast from 'react-hot-toast';
@@ -95,7 +97,11 @@ export default function Sessions() {
   return (
     <Layout>
       <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <Link to="/dashboard" className="inline-flex items-center gap-2 text-zinc-400 hover:text-white mb-4 transition-colors">
+          <ArrowLeft size={18} />
+          <span className="text-sm">Back to Dashboard</span>
+        </Link>
+        <div className="flex items-center justify-between">
           <div>
             <h1 className="text-4xl font-normal mb-2 gradient-text" style={{ letterSpacing: '-0.02em' }}>My Sessions</h1>
             <p style={{ color: 'rgba(255,255,255,0.5)' }}>Manage your learning and mentoring sessions.</p>

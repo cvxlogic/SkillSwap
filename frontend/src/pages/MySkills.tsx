@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Plus, Trash2, BookOpen } from 'lucide-react';
+import { Plus, Trash2, BookOpen, ArrowLeft } from 'lucide-react';
 import Layout from '../components/Layout';
 import Modal from '../components/Modal';
 import { useAuth } from '../context/AuthContext';
@@ -85,6 +86,10 @@ export default function MySkills() {
   return (
     <Layout>
       <div className="space-y-6">
+        <Link to="/dashboard" className="inline-flex items-center gap-2 text-zinc-400 hover:text-white mb-4 transition-colors">
+          <ArrowLeft size={18} />
+          <span className="text-sm">Back to Dashboard</span>
+        </Link>
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-4xl font-normal mb-2 gradient-text" style={{ letterSpacing: '-0.02em' }}>My Skills</h1>
